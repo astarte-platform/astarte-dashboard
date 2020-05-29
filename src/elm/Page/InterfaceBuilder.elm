@@ -1234,12 +1234,44 @@ renderCardTitleRow builderMode interface =
 
                 Edit _ ->
                     interface.name
+
+        showDraftBadge =
+            case ( builderMode, interface.major ) of
+                ( Edit _, 0 ) ->
+                    True
+
+                _ ->
+                    False
     in
-    Grid.row [ Row.attrs [ Spacing.mt2 ] ]
-        [ Grid.col []
+    Grid.row
+        [ Row.attrs
+            [ class "no-gutters"
+            , Spacing.my3
+            ]
+        ]
+        [ Grid.col
+            [ Col.xsAuto
+            , Col.attrs [ Spacing.pl3, Spacing.pr2 ]
+            ]
             [ Html.h3
-                [ class "text-truncate" ]
+                [ class "text-truncate"
+                , Spacing.mb0
+                ]
                 [ Html.text title ]
+            ]
+        , Grid.col
+            [ if showDraftBadge then
+                Col.xsAuto
+
+              else
+                Col.attrs [ Display.none ]
+            ]
+            [ Html.h3
+                [ Spacing.mb0 ]
+                [ Badge.badgeSecondary
+                    [ class "align-bottom" ]
+                    [ Html.text "draft" ]
+                ]
             ]
         ]
 
