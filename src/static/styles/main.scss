@@ -42,6 +42,7 @@ $navbar-padding-x:      0rem;
 $nav-link-padding-y:    1.0rem;
 $nav-link-padding-x:    1.5rem;
 $code-color:            $dark-blue;
+$topbar-height:         4rem;
 
 $form-feedback-icon-valid: none;
 
@@ -124,14 +125,15 @@ h6,
 
 .nav-brand {
     width: 100%;
-    padding: 0.7rem 1rem;
+    height: $topbar-height;
+    padding: 0.5rem 1rem;
     margin: 0;
     text-align: center;
     background-color: darken($navbar-color, 5%);
 }
 
 .brand-logo {
-    height: 4rem;
+    height: 100%;
     margin: auto;
 }
 
@@ -167,6 +169,12 @@ h6,
     p {
         margin-bottom: 0.5rem;
     }
+}
+
+.topbar {
+    height: $topbar-height;
+    padding: 0.5rem 1.5rem;
+    background-color: darken($navbar-color, 5%);
 }
 
 .icon-spacer {

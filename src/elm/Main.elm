@@ -905,13 +905,27 @@ view model =
                         [ Col.attrs [ Display.none ] ]
                     )
                     [ renderNavbar model realmName ]
-                , Grid.col
-                    [ Col.attrs [ class "main-content overflow-hidden" ] ]
-                    [ renderPage model model.selectedPage ]
+                , Grid.col []
+                    [ if showNavbar then
+                        topbar realmName
+
+                      else
+                        Html.text ""
+                    , Html.div [ class "main-content overflow-hidden" ]
+                        [ renderPage model model.selectedPage ]
+                    ]
                 ]
             ]
         ]
     }
+
+
+topbar : String -> Html Msg
+topbar realmName =
+    Html.div [ class "topbar d-flex align-items-center" ]
+        [ Html.span [ class "text-light align-self-end h3 mb-2" ]
+            [ Html.text realmName ]
+        ]
 
 
 
