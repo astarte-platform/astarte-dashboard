@@ -141,10 +141,8 @@ function Login(props) {
 }
 
 function GroupDevicesSubPath(props) {
-  const { groupName } = useParams();
-  const decodedGroupName = decodeURIComponent(groupName);
-
-  return <GroupDevicesPage groupName={decodedGroupName} {...props} />;
+  const parsedGroupName = decodeURIComponent(window.location.pathname.split('/')[2]);
+  return <GroupDevicesPage groupName={parsedGroupName} {...props} />;
 }
 
 function FlowDetails(props) {
