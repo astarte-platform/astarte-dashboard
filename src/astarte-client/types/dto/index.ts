@@ -21,3 +21,4 @@ export type { AstarteCustomBlockDTO } from './customBlock.d';
 export type { AstarteNativeBlockDTO } from './nativeBlock.d';
 export type { AstarteDeviceDTO } from './device.d';
 export type { AstarteMappingDTO } from './mapping.d';
+export type { AstarteInterfaceDTO } from './interface.d';

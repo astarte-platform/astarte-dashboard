@@ -22,6 +22,7 @@ export {
   AstarteCustomBlock,
   AstarteNativeBlock,
   AstarteDevice,
+  AstarteInterface,
   AstarteMapping,
   AstarteRealm,
   AstarteToken,
