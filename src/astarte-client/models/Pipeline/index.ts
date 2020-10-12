@@ -16,18 +16,27 @@
    limitations under the License.
 */
 
-import AstarteClient from './client';
+import { AstartePipelineDTO } from '../../types';
 
-export {
-  AstarteCustomBlock,
-  AstarteNativeBlock,
-  AstarteDevice,
-  AstarteFlow,
-  AstartePipeline,
-  AstarteRealm,
-  AstarteToken,
-} from './models';
+export class AstartePipeline {
+  name: string;
 
-export type { AstarteBlock } from './models';
+  description: string;
 
-export default AstarteClient;
+  schema: {
+    [key: string]: any;
+  };
+
+  source: string;
+
+  constructor(pipeline: AstartePipelineDTO) {
+    this.name = pipeline.name;
+    this.description = pipeline.description;
+    this.schema = pipeline.schema;
+    this.source = pipeline.source;
+  }
+
+  static fromObject(dto: AstartePipelineDTO): AstartePipeline {
+    return new AstartePipeline(dto);
+  }
+}
