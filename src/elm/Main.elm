@@ -513,6 +513,9 @@ pageInit realmRoute config session =
         Route.GroupList ->
             initGroupListPage session session.apiConfig.realm
 
+        Route.NewGroup ->
+            initReactPage session Groups "new-group" realmRoute
+
         Route.GroupDevices groupName ->
             ( Realm session.apiConfig.realm GroupDevicesPage
             , Cmd.map (\a -> Ignore) (GroupDevices.init groupName)

@@ -55,6 +55,7 @@ type RealmRoute
     | ShowDevice String
     | ShowDeviceData String String
     | GroupList
+    | NewGroup
     | GroupDevices String
 
 
@@ -85,6 +86,7 @@ realmRouteParser =
         , map ShowDevice (s "devices" </> string </> s "edit")
         , map ShowDeviceData (s "devices" </> string </> s "interfaces" </> string)
         , map GroupList (s "groups")
+        , map NewGroup (s "groups" </> s "new")
         , map GroupDevices (s "groups" </> string </> s "edit")
         ]
 
@@ -164,6 +166,9 @@ toString route =
 
                 Realm GroupList ->
                     [ "groups" ]
+
+                Realm NewGroup ->
+                    [ "groups", "new" ]
 
                 Realm (GroupDevices groupName) ->
                     [ "groups", groupName, "edit" ]
