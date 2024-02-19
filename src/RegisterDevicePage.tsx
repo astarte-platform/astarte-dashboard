@@ -21,7 +21,7 @@
 import React, { useCallback, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
-import { Button, Col, Form, Spinner, Table } from 'react-bootstrap';
+import { Button, Col, Form, Row, Spinner, Table } from 'react-bootstrap';
 import type { AstarteDevice, AstarteInterfaceDescriptor } from 'astarte-client';
 
 import Icon from './components/Icon';
@@ -316,7 +316,7 @@ export default (): React.ReactElement => {
     <SingleCardPage title="Register Device" backLink="/devices">
       <AlertsBanner alerts={registrationAlerts} />
       <Form onSubmit={registerDevice}>
-        <Form.Row className="mb-2">
+        <Row className="mb-2">
           <Form.Group as={Col} controlId="deviceIdInput">
             <Form.Label>Device ID</Form.Label>
             <Form.Control
@@ -346,7 +346,7 @@ export default (): React.ReactElement => {
               Generate from name...
             </Button>
           </Form.Group>
-        </Form.Row>
+        </Row>
         <Form.Group
           controlId="sendIntrospectionInput"
           className={shouldSendIntrospection ? 'mb-0' : ''}
@@ -367,7 +367,7 @@ export default (): React.ReactElement => {
             onRemoveInterface={removeIntrospectionInterface}
           />
         )}
-        <Form.Row className="flex-row-reverse pe-2">
+        <Row className="flex-row-reverse pe-2">
           <Button
             variant="primary"
             type="submit"
@@ -378,7 +378,7 @@ export default (): React.ReactElement => {
             )}
             Register device
           </Button>
-        </Form.Row>
+        </Row>
       </Form>
       {showNamespaceModal && (
         <NamespaceModal
