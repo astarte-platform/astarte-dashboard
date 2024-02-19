@@ -18,7 +18,7 @@ limitations under the License.
 /* eslint-disable camelcase */
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
+import { Col, Container, Form, InputGroup, Row, Stack } from 'react-bootstrap';
 import _, { toInteger } from 'lodash';
 import { AstarteTriggerDeliveryPolicyDTO } from 'astarte-client/types/dto';
 import * as yup from 'yup';
@@ -173,7 +173,7 @@ export default ({
         <Container fluid className="bg-white rounded p-3">
           <Form>
             <Row className="mb-2">
-              <Col sm={12}>
+              <Col as={Stack} gap={3} sm={12}>
                 <Form.Group controlId="policyName">
                   <Form.Label>Name</Form.Label>
                   <Form.Control

@@ -17,7 +17,7 @@
 */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Col, Container, Form, Row } from 'react-bootstrap';
+import { Col, Container, Form, Row, Stack } from 'react-bootstrap';
 import { AstarteInterface, AstarteTrigger, AstarteSimpleTrigger } from 'astarte-client';
 import _ from 'lodash';
 
@@ -446,7 +446,7 @@ export default ({
   return (
     <Row>
       <Col md={isSourceVisible ? 6 : 12}>
-        <Container fluid className="bg-white rounded p-3">
+        <Container as={Stack} gap={3} className="bg-white rounded p-3">
           <Form>
             <Row className="mb-2">
               <Col sm={12}>
