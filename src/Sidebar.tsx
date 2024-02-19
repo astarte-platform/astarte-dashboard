@@ -28,7 +28,7 @@ interface SidebarApiStatusProps {
 }
 
 const SidebarApiStatus = ({ healthy, realm }: SidebarApiStatusProps) => (
-  <NavItem className="nav-status pl-4">
+  <NavItem className="nav-status ps-4">
     <div>
       <b>Realm</b>
     </div>
@@ -37,7 +37,7 @@ const SidebarApiStatus = ({ healthy, realm }: SidebarApiStatusProps) => (
       <b>API Status</b>
     </div>
     <p className="my-1">
-      <Icon icon={healthy ? 'statusConnected' : 'statusDisconnected'} className="mr-2" />
+      <Icon icon={healthy ? 'statusConnected' : 'statusDisconnected'} className="me-2" />
       {healthy ? 'Up and running' : 'Degraded'}
     </p>
   </NavItem>
@@ -77,7 +77,7 @@ const SidebarItem = ({ icon, label, link }: SidebarItemProps) => {
 
   return (
     <NavLink as={Link} to={link} active={isSelected}>
-      <Icon icon={icon} className="mr-2" />
+      <Icon icon={icon} className="me-2" />
       {label}
     </NavLink>
   );
