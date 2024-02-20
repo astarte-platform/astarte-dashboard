@@ -96,18 +96,18 @@ export default (): React.ReactElement => {
         </WaitForData>
       </SingleCardPage>
       {pipelineFetcher.status === 'ok' && (
-        <Row className="justify-content-end m-3">
+        <div className="d-flex flex-column flex-md-row justify-content-end gap-3 m-3">
           <Button
             variant="danger"
             onClick={() => setShowDeleteModal(true)}
             disabled={isDeletingPipeline}
           >
             {isDeletingPipeline && (
-              <Spinner as="span" size="sm" animation="border" role="status" className="mr-2" />
+              <Spinner as="span" size="sm" animation="border" role="status" className="me-2" />
             )}
             Delete pipeline
           </Button>
-        </Row>
+        </div>
       )}
       {showDeleteModal && (
         <ConfirmModal

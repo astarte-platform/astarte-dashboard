@@ -18,7 +18,7 @@ limitations under the License.
 /* eslint-disable camelcase */
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Col, Container, Form, InputGroup, Row } from 'react-bootstrap';
+import { Col, Container, Form, InputGroup, Row, Stack } from 'react-bootstrap';
 import _, { toInteger } from 'lodash';
 import { AstarteTriggerDeliveryPolicyDTO } from 'astarte-client/types/dto';
 import * as yup from 'yup';
@@ -172,8 +172,8 @@ export default ({
       <Col md={isSourceVisible ? 6 : 12}>
         <Container fluid className="bg-white rounded p-3">
           <Form>
-            <Form.Row className="mb-2">
-              <Col sm={12}>
+            <Row className="mb-2">
+              <Col as={Stack} gap={3} sm={12}>
                 <Form.Group controlId="policyName">
                   <Form.Label>Name</Form.Label>
                   <Form.Control
@@ -238,13 +238,11 @@ export default ({
                       value={_.get(policyDraft, 'event_ttl') || 0}
                       onChange={handleEventTtlChange}
                     />
-                    <InputGroup.Append>
-                      <InputGroup.Text>seconds</InputGroup.Text>
-                    </InputGroup.Append>
+                    <InputGroup.Text>seconds</InputGroup.Text>
                   </InputGroup>
                 </Form.Group>
               </Col>
-            </Form.Row>
+            </Row>
           </Form>
         </Container>
       </Col>
@@ -253,7 +251,7 @@ export default ({
           <Form.Group controlId="policySource" className="h-100 d-flex flex-column">
             <Form.Control
               as="textarea"
-              className="flex-grow-1 text-monospace"
+              className="flex-grow-1 font-monospace"
               value={policySource}
               onChange={handlePolicySourceChange}
               autoComplete="off"

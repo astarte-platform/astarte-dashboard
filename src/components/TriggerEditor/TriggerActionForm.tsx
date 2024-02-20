@@ -17,7 +17,7 @@
 */
 
 import React, { useCallback } from 'react';
-import { Button, Col, Form, InputGroup, Table } from 'react-bootstrap';
+import { Button, Col, Form, InputGroup, Row, Stack, Table } from 'react-bootstrap';
 import { AstarteTrigger, AstarteTriggerHTTPAction, AstarteTriggerAMQPAction } from 'astarte-client';
 import _ from 'lodash';
 
@@ -68,7 +68,7 @@ const TriggerActionForm = ({
   const triggerAmqpHeaders = _.get(action, 'amqpStaticHeaders') || {};
 
   const handleTriggerActionTypeChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
       const { value } = e.target;
       const actionType = value as 'amqp' | 'http';
       onChange(actionType === 'http' ? defaultTriggerHttpAction : defaultTriggerAmqpAction);
@@ -77,7 +77,7 @@ const TriggerActionForm = ({
   );
 
   const handleTriggerActionHttpMethodChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
       const { value } = e.target;
       const httpMethod = value as AstarteTriggerHTTPAction['httpMethod'];
       onChange({ ...action, httpMethod });
@@ -104,7 +104,7 @@ const TriggerActionForm = ({
   );
 
   const handleTriggerActionHttpPayloadTypeChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
       const { value } = e.target;
       const payloadType = value as 'default' | 'mustache';
       if (payloadType === 'mustache') {
@@ -178,327 +178,326 @@ const TriggerActionForm = ({
 
   return (
     <Form>
-      <Form.Row className="mb-2">
-        <Col sm={12}>
-          <Form.Group controlId="triggerActionType">
-            <Form.Label>Action type</Form.Label>
-            <Form.Control
-              as="select"
-              name="triggerActionType"
-              disabled={isReadOnly}
-              value={isAmqpAction ? 'amqp' : 'http'}
-              onChange={handleTriggerActionTypeChange}
-            >
-              <option value="http">HTTP request</option>
-              <option value="amqp">AMQP Message</option>
-            </Form.Control>
-          </Form.Group>
-        </Col>
-      </Form.Row>
-      {isHttpAction && (
-        <>
-          <Form.Row className="mb-2">
-            <Col sm={4}>
-              <Form.Group controlId="triggerMethod">
-                <Form.Label>Method</Form.Label>
-                <Form.Control
-                  as="select"
-                  name="triggerMethod"
-                  disabled={isReadOnly}
-                  value={_.get(action, 'httpMethod') || 'post'}
-                  onChange={handleTriggerActionHttpMethodChange}
-                  isInvalid={_.get(validationErrors, 'httpMethod') != null}
-                >
-                  {['delete', 'get', 'head', 'options', 'patch', 'post', 'put'].map((method) => (
-                    <option key={method} value={method}>
-                      {method.toUpperCase()}
-                    </option>
-                  ))}
-                </Form.Control>
-                <Form.Control.Feedback type="invalid">
-                  {_.get(validationErrors, 'httpMethod')}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-            <Col sm={8}>
-              <Form.Group controlId="triggerUrl">
-                <Form.Label>URL</Form.Label>
-                <Form.Control
-                  type="text"
-                  autoComplete="off"
-                  required
-                  readOnly={isReadOnly}
-                  value={_.get(action, 'httpUrl') || ''}
-                  onChange={handleTriggerActionHttpUrlChange}
-                  isInvalid={_.get(validationErrors, 'httpUrl') != null}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {_.get(validationErrors, 'httpUrl')}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Form.Row>
-          <Form.Row className="mb-2">
-            <Col sm={12}>
-              <Form.Group controlId="actionIgnoreSSLErrors">
-                <Form.Check
-                  type="checkbox"
-                  name="actionIgnoreSSLErrors"
-                  label="Ignore SSL errors"
-                  disabled={isReadOnly}
-                  checked={_.get(action, 'ignoreSslErrors') || false}
-                  onChange={handleTriggerActionHttpIgnoreSSLErrorsChange}
-                  isInvalid={_.get(validationErrors, 'ignoreSslErrors') != null}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {_.get(validationErrors, 'ignoreSslErrors')}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Form.Row>
-          <Form.Row className="mb-2">
-            <Col sm={12}>
-              <Form.Group controlId="triggerTemplateType">
-                <Form.Label>Payload type</Form.Label>
-                <Form.Control
-                  as="select"
-                  name="triggerTemplateType"
-                  disabled={isReadOnly}
-                  value={triggerPayloadType}
-                  onChange={handleTriggerActionHttpPayloadTypeChange}
-                >
-                  <option value="default">Use default event format (JSON)</option>
-                  <option value="mustache">Mustache</option>
-                </Form.Control>
-              </Form.Group>
-            </Col>
-          </Form.Row>
-          {triggerPayloadType === 'mustache' && (
-            <Form.Row className="mb-2">
-              <Col sm={12}>
-                <Form.Group controlId="actionPayload">
-                  <Form.Label>Payload</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    autoComplete="off"
-                    rows={3}
-                    required
-                    readOnly={isReadOnly}
-                    value={_.get(action, 'template') || ''}
-                    onChange={handleTriggerActionHttpPayloadChange}
-                    isInvalid={_.get(validationErrors, 'template') != null}
-                  />
+      <Stack gap={3}>
+        <Row className="mb-2">
+          <Col sm={12}>
+            <Form.Group controlId="triggerActionType">
+              <Form.Label>Action type</Form.Label>
+              <Form.Select
+                name="triggerActionType"
+                disabled={isReadOnly}
+                value={isAmqpAction ? 'amqp' : 'http'}
+                onChange={handleTriggerActionTypeChange}
+              >
+                <option value="http">HTTP request</option>
+                <option value="amqp">AMQP Message</option>
+              </Form.Select>
+            </Form.Group>
+          </Col>
+        </Row>
+        {isHttpAction && (
+          <>
+            <Row className="mb-2">
+              <Col sm={4}>
+                <Form.Group controlId="triggerMethod">
+                  <Form.Label>Method</Form.Label>
+                  <Form.Select
+                    name="triggerMethod"
+                    disabled={isReadOnly}
+                    value={_.get(action, 'httpMethod') || 'post'}
+                    onChange={handleTriggerActionHttpMethodChange}
+                    isInvalid={_.get(validationErrors, 'httpMethod') != null}
+                  >
+                    {['delete', 'get', 'head', 'options', 'patch', 'post', 'put'].map((method) => (
+                      <option key={method} value={method}>
+                        {method.toUpperCase()}
+                      </option>
+                    ))}
+                  </Form.Select>
                   <Form.Control.Feedback type="invalid">
-                    {_.get(validationErrors, 'template')}
+                    {_.get(validationErrors, 'httpMethod')}
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
-            </Form.Row>
-          )}
-          <Form.Row className="mb-2">
-            <Col sm={12}>
-              <Form.Group controlId="actionHttpHeaders">
-                {!isReadOnly && (
-                  <Button variant="link" className="p-0" onClick={() => onAddHttpHeader()}>
-                    <Icon icon="add" className="mr-2" />
-                    Add custom HTTP headers
-                  </Button>
-                )}
-                {!_.isEmpty(triggerHttpHeaders) && (
-                  <Table responsive>
-                    <thead>
-                      <tr>
-                        <th>Header</th>
-                        <th>Value</th>
-                        {!isReadOnly && <th className="action-column">Actions</th>}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(triggerHttpHeaders).map(([headerName, headerValue]) => (
-                        <tr key={headerName}>
-                          <td>{headerName}</td>
-                          <td>{headerValue as string}</td>
-                          {!isReadOnly && (
-                            <td className="text-center">
-                              <Icon
-                                icon="edit"
-                                onClick={() => onEditHttpHeader(headerName)}
-                                className="color-grey mr-2"
-                              />
-                              <Icon icon="erase" onClick={() => onDeleteHttpHeader(headerName)} />
-                            </td>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
-                <Form.Control
-                  className="d-none"
-                  isInvalid={_.get(validationErrors, 'httpStaticHeaders') != null}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {_.get(validationErrors, 'httpStaticHeaders')}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Form.Row>
-        </>
-      )}
-      {isAmqpAction && (
-        <>
-          <Form.Row className="mb-2">
-            <Col sm={12}>
-              <Form.Group controlId="amqpExchange">
-                <Form.Label>Exchange</Form.Label>
-                <Form.Control
-                  type="text"
-                  autoComplete="off"
-                  placeholder={`astarte_events_${realm || '<realm-name>'}_<exchange-name>`}
-                  required
-                  readOnly={isReadOnly}
-                  value={_.get(action, 'amqpExchange') || ''}
-                  onChange={handleTriggerActionAmqpExchangeChange}
-                  isInvalid={_.get(validationErrors, 'amqpExchange') != null}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {_.get(validationErrors, 'amqpExchange')}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Form.Row>
-          <Form.Row className="mb-2">
-            <Col sm={12}>
-              <Form.Group controlId="amqpRoutingKey">
-                <Form.Label>Routing key</Form.Label>
-                <Form.Control
-                  type="text"
-                  autoComplete="off"
-                  required
-                  readOnly={isReadOnly}
-                  value={_.get(action, 'amqpRoutingKey') || ''}
-                  onChange={handleTriggerActionAmqpRoutingKeyChange}
-                  isInvalid={_.get(validationErrors, 'amqpRoutingKey') != null}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {_.get(validationErrors, 'amqpRoutingKey')}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Form.Row>
-          <Form.Row className="mb-2">
-            <Col sm={12}>
-              <Form.Group controlId="amqpPersistency">
-                <Form.Label>Persistency</Form.Label>
-                <Form.Check
-                  type="checkbox"
-                  name="amqpPersistency"
-                  label="Publish persistent messages"
-                  disabled={isReadOnly}
-                  checked={_.get(action, 'amqpMessagePersistent') || false}
-                  onChange={handleTriggerActionAmqpMessagePersistentChange}
-                  isInvalid={_.get(validationErrors, 'amqpMessagePersistent') != null}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {_.get(validationErrors, 'amqpMessagePersistent')}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Form.Row>
-          <Form.Row className="mb-2">
-            <Col sm={12}>
-              <Form.Group controlId="amqpPriority">
-                <Form.Label>Priority</Form.Label>
-                <Form.Control
-                  type="number"
-                  min={0}
-                  max={9}
-                  required
-                  readOnly={isReadOnly}
-                  value={_.get(action, 'amqpMessagePriority') || 0}
-                  onChange={handleTriggerActionAmqpMessagePriorityChange}
-                  isInvalid={_.get(validationErrors, 'amqpMessagePriority') != null}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {_.get(validationErrors, 'amqpMessagePriority')}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Form.Row>
-          <Form.Row className="mb-2">
-            <Col sm={12}>
-              <Form.Group controlId="amqpExpiration">
-                <Form.Label>Expiration</Form.Label>
-                <InputGroup>
+              <Col sm={8}>
+                <Form.Group controlId="triggerUrl">
+                  <Form.Label>URL</Form.Label>
                   <Form.Control
-                    type="number"
-                    min={1}
+                    type="text"
+                    autoComplete="off"
                     required
                     readOnly={isReadOnly}
-                    value={_.get(action, 'amqpMessageExpirationMilliseconds') || 0}
-                    onChange={handleTriggerActionAmqpMessageExpirationMillisecondsChange}
-                    isInvalid={_.get(validationErrors, 'amqpMessageExpirationMilliseconds') != null}
+                    value={_.get(action, 'httpUrl') || ''}
+                    onChange={handleTriggerActionHttpUrlChange}
+                    isInvalid={_.get(validationErrors, 'httpUrl') != null}
                   />
-                  <InputGroup.Append>
-                    <InputGroup.Text>milliseconds</InputGroup.Text>
-                  </InputGroup.Append>
                   <Form.Control.Feedback type="invalid">
-                    {_.get(validationErrors, 'amqpMessageExpirationMilliseconds')}
+                    {_.get(validationErrors, 'httpUrl')}
                   </Form.Control.Feedback>
-                </InputGroup>
-              </Form.Group>
-            </Col>
-          </Form.Row>
-          <Form.Row className="mb-2">
-            <Col sm={12}>
-              <Form.Group controlId="actionAmqpHeaders">
-                {!isReadOnly && (
-                  <Button variant="link" className="p-0" onClick={() => onAddAmqpHeader()}>
-                    <Icon icon="add" className="mr-2" />
-                    Add static AMQP headers
-                  </Button>
-                )}
-                {!_.isEmpty(triggerAmqpHeaders) && (
-                  <Table responsive>
-                    <thead>
-                      <tr>
-                        <th>Header</th>
-                        <th>Value</th>
-                        {!isReadOnly && <th className="action-column">Actions</th>}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(triggerAmqpHeaders).map(([headerName, headerValue]) => (
-                        <tr key={headerName}>
-                          <td>{headerName}</td>
-                          <td>{headerValue as string}</td>
-                          {!isReadOnly && (
-                            <td className="text-center">
-                              <Icon
-                                icon="edit"
-                                onClick={() => onEditAmqpHeader(headerName)}
-                                className="color-grey mr-2"
-                              />
-                              <Icon icon="erase" onClick={() => onDeleteAmqpHeader(headerName)} />
-                            </td>
-                          )}
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="mb-2">
+              <Col sm={12}>
+                <Form.Group controlId="actionIgnoreSSLErrors">
+                  <Form.Check
+                    type="checkbox"
+                    name="actionIgnoreSSLErrors"
+                    label="Ignore SSL errors"
+                    disabled={isReadOnly}
+                    checked={_.get(action, 'ignoreSslErrors') || false}
+                    onChange={handleTriggerActionHttpIgnoreSSLErrorsChange}
+                    isInvalid={_.get(validationErrors, 'ignoreSslErrors') != null}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {_.get(validationErrors, 'ignoreSslErrors')}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="mb-2">
+              <Col sm={12}>
+                <Form.Group controlId="triggerTemplateType">
+                  <Form.Label>Payload type</Form.Label>
+                  <Form.Select
+                    name="triggerTemplateType"
+                    disabled={isReadOnly}
+                    value={triggerPayloadType}
+                    onChange={handleTriggerActionHttpPayloadTypeChange}
+                  >
+                    <option value="default">Use default event format (JSON)</option>
+                    <option value="mustache">Mustache</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
+            {triggerPayloadType === 'mustache' && (
+              <Row className="mb-2">
+                <Col sm={12}>
+                  <Form.Group controlId="actionPayload">
+                    <Form.Label>Payload</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      autoComplete="off"
+                      rows={3}
+                      required
+                      readOnly={isReadOnly}
+                      value={_.get(action, 'template') || ''}
+                      onChange={handleTriggerActionHttpPayloadChange}
+                      isInvalid={_.get(validationErrors, 'template') != null}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      {_.get(validationErrors, 'template')}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+              </Row>
+            )}
+            <Row className="mb-2">
+              <Col sm={12}>
+                <Form.Group controlId="actionHttpHeaders">
+                  {!isReadOnly && (
+                    <Button variant="link" className="p-0" onClick={() => onAddHttpHeader()}>
+                      <Icon icon="add" className="me-2" />
+                      Add custom HTTP headers
+                    </Button>
+                  )}
+                  {!_.isEmpty(triggerHttpHeaders) && (
+                    <Table responsive>
+                      <thead>
+                        <tr>
+                          <th>Header</th>
+                          <th>Value</th>
+                          {!isReadOnly && <th className="action-column">Actions</th>}
                         </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                )}
-                <Form.Control
-                  className="d-none"
-                  isInvalid={_.get(validationErrors, 'amqpStaticHeaders') != null}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {_.get(validationErrors, 'amqpStaticHeaders')}
-                </Form.Control.Feedback>
-              </Form.Group>
-            </Col>
-          </Form.Row>
-        </>
-      )}
+                      </thead>
+                      <tbody>
+                        {Object.entries(triggerHttpHeaders).map(([headerName, headerValue]) => (
+                          <tr key={headerName}>
+                            <td>{headerName}</td>
+                            <td>{headerValue as string}</td>
+                            {!isReadOnly && (
+                              <td className="text-center">
+                                <Icon
+                                  icon="edit"
+                                  onClick={() => onEditHttpHeader(headerName)}
+                                  className="color-grey me-2"
+                                />
+                                <Icon icon="erase" onClick={() => onDeleteHttpHeader(headerName)} />
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  )}
+                  <Form.Control
+                    className="d-none"
+                    isInvalid={_.get(validationErrors, 'httpStaticHeaders') != null}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {_.get(validationErrors, 'httpStaticHeaders')}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+          </>
+        )}
+        {isAmqpAction && (
+          <>
+            <Row className="mb-2">
+              <Col sm={12}>
+                <Form.Group controlId="amqpExchange">
+                  <Form.Label>Exchange</Form.Label>
+                  <Form.Control
+                    type="text"
+                    autoComplete="off"
+                    placeholder={`astarte_events_${realm || '<realm-name>'}_<exchange-name>`}
+                    required
+                    readOnly={isReadOnly}
+                    value={_.get(action, 'amqpExchange') || ''}
+                    onChange={handleTriggerActionAmqpExchangeChange}
+                    isInvalid={_.get(validationErrors, 'amqpExchange') != null}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {_.get(validationErrors, 'amqpExchange')}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="mb-2">
+              <Col sm={12}>
+                <Form.Group controlId="amqpRoutingKey">
+                  <Form.Label>Routing key</Form.Label>
+                  <Form.Control
+                    type="text"
+                    autoComplete="off"
+                    required
+                    readOnly={isReadOnly}
+                    value={_.get(action, 'amqpRoutingKey') || ''}
+                    onChange={handleTriggerActionAmqpRoutingKeyChange}
+                    isInvalid={_.get(validationErrors, 'amqpRoutingKey') != null}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {_.get(validationErrors, 'amqpRoutingKey')}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="mb-2">
+              <Col sm={12}>
+                <Form.Group controlId="amqpPersistency">
+                  <Form.Label>Persistency</Form.Label>
+                  <Form.Check
+                    type="checkbox"
+                    name="amqpPersistency"
+                    label="Publish persistent messages"
+                    disabled={isReadOnly}
+                    checked={_.get(action, 'amqpMessagePersistent') || false}
+                    onChange={handleTriggerActionAmqpMessagePersistentChange}
+                    isInvalid={_.get(validationErrors, 'amqpMessagePersistent') != null}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {_.get(validationErrors, 'amqpMessagePersistent')}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="mb-2">
+              <Col sm={12}>
+                <Form.Group controlId="amqpPriority">
+                  <Form.Label>Priority</Form.Label>
+                  <Form.Control
+                    type="number"
+                    min={0}
+                    max={9}
+                    required
+                    readOnly={isReadOnly}
+                    value={_.get(action, 'amqpMessagePriority') || 0}
+                    onChange={handleTriggerActionAmqpMessagePriorityChange}
+                    isInvalid={_.get(validationErrors, 'amqpMessagePriority') != null}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {_.get(validationErrors, 'amqpMessagePriority')}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="mb-2">
+              <Col sm={12}>
+                <Form.Group controlId="amqpExpiration">
+                  <Form.Label>Expiration</Form.Label>
+                  <InputGroup>
+                    <Form.Control
+                      type="number"
+                      min={1}
+                      required
+                      readOnly={isReadOnly}
+                      value={_.get(action, 'amqpMessageExpirationMilliseconds') || 0}
+                      onChange={handleTriggerActionAmqpMessageExpirationMillisecondsChange}
+                      isInvalid={
+                        _.get(validationErrors, 'amqpMessageExpirationMilliseconds') != null
+                      }
+                    />
+                    <InputGroup.Text>milliseconds</InputGroup.Text>
+                    <Form.Control.Feedback type="invalid">
+                      {_.get(validationErrors, 'amqpMessageExpirationMilliseconds')}
+                    </Form.Control.Feedback>
+                  </InputGroup>
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="mb-2">
+              <Col sm={12}>
+                <Form.Group controlId="actionAmqpHeaders">
+                  {!isReadOnly && (
+                    <Button variant="link" className="p-0" onClick={() => onAddAmqpHeader()}>
+                      <Icon icon="add" className="me-2" />
+                      Add static AMQP headers
+                    </Button>
+                  )}
+                  {!_.isEmpty(triggerAmqpHeaders) && (
+                    <Table responsive>
+                      <thead>
+                        <tr>
+                          <th>Header</th>
+                          <th>Value</th>
+                          {!isReadOnly && <th className="action-column">Actions</th>}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Object.entries(triggerAmqpHeaders).map(([headerName, headerValue]) => (
+                          <tr key={headerName}>
+                            <td>{headerName}</td>
+                            <td>{headerValue as string}</td>
+                            {!isReadOnly && (
+                              <td className="text-center">
+                                <Icon
+                                  icon="edit"
+                                  onClick={() => onEditAmqpHeader(headerName)}
+                                  className="color-grey me-2"
+                                />
+                                <Icon icon="erase" onClick={() => onDeleteAmqpHeader(headerName)} />
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  )}
+                  <Form.Control
+                    className="d-none"
+                    isInvalid={_.get(validationErrors, 'amqpStaticHeaders') != null}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {_.get(validationErrors, 'amqpStaticHeaders')}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+          </>
+        )}
+      </Stack>
     </Form>
   );
 };

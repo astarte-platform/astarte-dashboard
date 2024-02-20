@@ -221,7 +221,7 @@ const AlertBanner = ({ alert }: AlertBannerProps) => {
         className="d-flex justify-content-between flex-wrap"
       >
         {alert.message}
-        <div className="col text-right">{alertRelativeTime}</div>
+        <div className="col text-end">{alertRelativeTime}</div>
       </Alert>
     </Col>
   );
@@ -231,13 +231,19 @@ interface AlertsBannerProps {
   alerts: IAlert[];
 }
 
-const AlertsBanner = ({ alerts }: AlertsBannerProps) => (
-  <Row>
-    {alerts.map((alert) => (
-      <AlertBanner key={alert.id} alert={alert} />
-    ))}
-  </Row>
-);
+const AlertsBanner = ({ alerts }: AlertsBannerProps) => {
+  if (!alerts.length) {
+    return null;
+  }
+
+  return (
+    <Row>
+      {alerts.map((alert) => (
+        <AlertBanner key={alert.id} alert={alert} />
+      ))}
+    </Row>
+  );
+};
 
 const useGlobalAlerts = (): AlertsController => {
   const alertContext = useContext(GlobalAlertsUtilsContext) as React.RefObject<AlertsController>;

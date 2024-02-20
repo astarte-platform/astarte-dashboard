@@ -18,7 +18,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Container, Form, InputGroup, Spinner } from 'react-bootstrap';
+import { Button, Container, Form, InputGroup, Spinner, Stack } from 'react-bootstrap';
 import type { AstarteDevice } from 'astarte-client';
 
 import { AlertsBanner, useAlerts } from './AlertManager';
@@ -69,13 +69,11 @@ interface FilterInputBoxProps {
 
 const FilterInputBox = ({ filter, onFilterChange }: FilterInputBoxProps): React.ReactElement => (
   <Form.Group>
-    <Form.Label srOnly>Table filter</Form.Label>
+    <Form.Label visuallyHidden>Table filter</Form.Label>
     <InputGroup>
-      <InputGroup.Prepend>
-        <InputGroup.Text>
-          <Icon icon="filter" />
-        </InputGroup.Text>
-      </InputGroup.Prepend>
+      <InputGroup.Text>
+        <Icon icon="filter" />
+      </InputGroup.Text>
       <Form.Control
         type="text"
         value={filter}
@@ -150,33 +148,41 @@ export default (): React.ReactElement => {
       >
         {(devices) => (
           <Form onSubmit={createGroup}>
-            <GroupNameFormGroup groupName={groupName} onGroupNameChange={setGroupName} />
-            <div className="table-toolbar p-1">
-              <span>
-                {selectedDeviceCount > 0
-                  ? `${selectedDeviceCount} ${
-                      selectedDeviceCount === 1 ? 'device' : 'devices'
-                    } selected.`
-                  : 'Please select at least one device.'}
-              </span>
-              <div className="float-right">
-                <FilterInputBox filter={deviceFilter} onFilterChange={setDeviceFilter} />
+            <Stack gap={3}>
+              <GroupNameFormGroup groupName={groupName} onGroupNameChange={setGroupName} />
+              <div className="table-toolbar p-1">
+                <span>
+                  {selectedDeviceCount > 0
+                    ? `${selectedDeviceCount} ${
+                        selectedDeviceCount === 1 ? 'device' : 'devices'
+                      } selected.`
+                    : 'Please select at least one device.'}
+                </span>
+                <div className="float-end">
+                  <FilterInputBox filter={deviceFilter} onFilterChange={setDeviceFilter} />
+                </div>
               </div>
-            </div>
-            <CheckableDeviceTable
-              filter={deviceFilter}
-              devices={devices}
-              selectedDevices={selectedDevices}
-              onToggleDevice={handleDeviceToggle}
-            />
-            <Form.Row className="flex-row-reverse pr-2">
-              <Button variant="primary" type="submit" disabled={!isValidForm || isCreatingGroup}>
-                {isCreatingGroup && (
-                  <Spinner as="span" size="sm" animation="border" role="status" className="mr-2" />
-                )}
-                Create group
-              </Button>
-            </Form.Row>
+              <CheckableDeviceTable
+                filter={deviceFilter}
+                devices={devices}
+                selectedDevices={selectedDevices}
+                onToggleDevice={handleDeviceToggle}
+              />
+              <div className="d-flex flex-column flex-md-row-reverse">
+                <Button variant="primary" type="submit" disabled={!isValidForm || isCreatingGroup}>
+                  {isCreatingGroup && (
+                    <Spinner
+                      as="span"
+                      size="sm"
+                      animation="border"
+                      role="status"
+                      className="me-2"
+                    />
+                  )}
+                  Create group
+                </Button>
+              </div>
+            </Stack>
           </Form>
         )}
       </WaitForData>

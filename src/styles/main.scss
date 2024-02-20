@@ -16,24 +16,13 @@
    limitations under the License.
 */
 
-$body-bg: #f1f1f1;
-
-$font-weight-light: 300;
-$font-weight-normal: 400;
-$font-weight-bold: 700;
-$small-font-size: 70%;
-
-$green: #5bcc6c;
-$red: #cc5b6d;
+$green: #33a344;
+$red: #dc3545;
 $dark-blue: #27303d;
 $grey: #7f7f7e;
 $black: #000;
 
-$primary: #487fc7;
-$inactive: #676e6e;
-$input-disabled-bg: #fafafa;
-
-$body-color: lighten($black, 20%);
+$primary: #3862b7;
 
 $navbar-width: 13em;
 $navbar-color: $dark-blue;
@@ -92,10 +81,6 @@ h6,
 
 .form-control-label {
   color: $black;
-}
-
-.form-row .col-no-label {
-  padding-top: 2em;
 }
 
 .color-green {
@@ -248,15 +233,6 @@ h6,
     border-left: 1.4px solid $warning;
     transform: rotate(45deg);
   }
-}
-
-.accordion-button {
-  padding: 1em 2em;
-  border: 1px solid rgba(0, 0, 0, 0.125);
-  border-radius: 0.25rem;
-  background-color: rgba(0, 0, 0, 0.03);
-  color: $primary;
-  text-align: left;
 }
 
 .device-data-piechart {

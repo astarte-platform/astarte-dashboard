@@ -18,7 +18,7 @@
 
 import React, { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Container, Row, Spinner } from 'react-bootstrap';
+import { Button, Container, Spinner, Stack } from 'react-bootstrap';
 import { AstarteTrigger } from 'astarte-client';
 
 import { AlertsBanner, useAlerts } from './AlertManager';
@@ -73,7 +73,7 @@ export default (): React.ReactElement => {
         <BackButton href="/triggers" />
         Trigger Editor
       </h2>
-      <div className="mt-4">
+      <Stack gap={3} className="mt-3">
         <AlertsBanner alerts={installationAlerts} />
         <TriggerEditor
           realm={astarte.realm}
@@ -85,8 +85,8 @@ export default (): React.ReactElement => {
           fetchInterfaceMajors={astarte.client.getInterfaceMajors}
           fetchInterface={astarte.client.getInterface}
         />
-        <Row className="justify-content-end m-0 mt-3">
-          <Button variant="secondary" className="mr-2" onClick={handleToggleSourceVisibility}>
+        <div className="d-flex flex-column flex-md-row justify-content-end gap-3">
+          <Button variant="secondary" className="me-2" onClick={handleToggleSourceVisibility}>
             {isSourceVisible ? 'Hide' : 'Show'} source
           </Button>
           <Button
@@ -95,12 +95,12 @@ export default (): React.ReactElement => {
             disabled={isInstallingTrigger || !isValidTrigger}
           >
             {isInstallingTrigger && (
-              <Spinner as="span" size="sm" animation="border" role="status" className="mr-2" />
+              <Spinner as="span" size="sm" animation="border" role="status" className="me-2" />
             )}
             Install Trigger
           </Button>
-        </Row>
-      </div>
+        </div>
+      </Stack>
     </Container>
   );
 };

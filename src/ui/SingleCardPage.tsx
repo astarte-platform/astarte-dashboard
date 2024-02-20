@@ -43,15 +43,15 @@ export default function SingleCardPage({
           {title}
         </h2>
         {docsLink && (
-          <div className="float-right">
+          <div className="float-end">
             <a target="_blank" rel="noreferrer" href={docsLink}>
-              <Icon icon="documentation" className="mr-2" />
+              <Icon icon="documentation" className="me-2" />
               Documentation
             </a>
           </div>
         )}
       </header>
-      <Container fluid className="bg-white rounded p-3">
+      <Container fluid className="bg-white rounded border p-3">
         {children}
       </Container>
     </Container>
