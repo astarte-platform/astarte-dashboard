@@ -19,7 +19,7 @@
 import React, { useState } from 'react';
 import { Button, Form, Modal, Spinner } from 'react-bootstrap';
 import type { ModalProps } from 'react-bootstrap';
-import JsonSchemaForm from '@rjsf/bootstrap-4';
+import JsonSchemaForm from '@astarte-platform/react-bootstrap';
 import validator from '@rjsf/validator-ajv8';
 import type { IChangeEvent } from '@rjsf/core';
 import type { WidgetProps } from '@rjsf/utils';
