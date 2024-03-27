@@ -123,7 +123,7 @@ const SidebarItem = ({ icon, label, link }: SidebarItemProps) => {
 
   return (
     <NavLink as={Link} to={link} active={isSelected}>
-      <Icon icon={icon} className="mr-2" />
+      <Icon icon={icon} className="me-2" />
       {label}
     </NavLink>
   );

@@ -107,18 +107,18 @@ export default (): React.ReactElement => {
         </WaitForData>
       </SingleCardPage>
       {blockStatus === 'ok' && blockData instanceof AstarteCustomBlock && (
-        <Row className="justify-content-end m-3">
+        <div className="d-flex flex-column flex-md-row justify-content-end gap-3 m-3">
           <Button
             variant="danger"
             onClick={() => setShowDeleteModal(true)}
             disabled={isDeletingBlock}
           >
             {isDeletingBlock && (
-              <Spinner as="span" size="sm" animation="border" role="status" className="mr-2" />
+              <Spinner as="span" size="sm" animation="border" role="status" className="me-2" />
             )}
             Delete block
           </Button>
-        </Row>
+        </div>
       )}
       {showDeleteModal && (
         <ConfirmModal

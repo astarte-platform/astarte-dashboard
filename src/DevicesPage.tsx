@@ -17,7 +17,17 @@
 */
 
 import React, { useCallback, useMemo, useState } from 'react';
-import { Button, Col, Container, Form, Pagination, Row, Spinner, Table } from 'react-bootstrap';
+import {
+  Button,
+  Col,
+  Container,
+  Form,
+  Pagination,
+  Row,
+  Spinner,
+  Stack,
+  Table,
+} from 'react-bootstrap';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import _ from 'lodash';
@@ -129,10 +139,10 @@ const DeviceRow = ({ device, filters }: DeviceRowProps): React.ReactElement => {
   return (
     <tr>
       <td>
-        <Icon className="mr-2" icon={icon} tooltip={iconTooltip} tooltipPlacement="right" />
+        <Icon className="me-2" icon={icon} tooltip={iconTooltip} tooltipPlacement="right" />
         <span>{statusLabel}</span>
       </td>
-      <td className={device.hasNameAlias ? '' : 'text-monospace'}>
+      <td className={device.hasNameAlias ? '' : 'font-monospace'}>
         <Link to={`/devices/${device.id}/edit`}>{device.name}</Link>
         <MatchedAttributes filters={filters} attributes={device.attributes} />
       </td>
@@ -304,103 +314,105 @@ const FilterForm = ({ filters, onUpdateFilters }: FilterFormProps): React.ReactE
 
   return (
     <Form className="p-2">
-      <Form.Group controlId="filterId" className="mb-4">
-        <Form.Label>
-          <b>Device ID/name</b>
-        </Form.Label>
-        <Form.Control
-          type="text"
-          value={deviceId}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onUpdateFilters({ ...filters, deviceId: e.target.value })
-          }
-        />
-      </Form.Group>
-      <Form.Group controlId="filterStatus" className="mb-4">
-        <Form.Label>
-          <b>Device status</b>
-        </Form.Label>
-        <Form.Check
-          type="checkbox"
-          id="checkbox-connected"
-          label="Connected"
-          checked={showConnected}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onUpdateFilters({ ...filters, showConnected: e.target.checked })
-          }
-        />
-        <Form.Check
-          type="checkbox"
-          id="checkbox-disconnected"
-          label="Disconnected"
-          checked={showDisconnected}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onUpdateFilters({ ...filters, showDisconnected: e.target.checked })
-          }
-        />
-        <Form.Check
-          type="checkbox"
-          id="checkbox-never-connected"
-          label="Never connected"
-          checked={showNeverConnected}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onUpdateFilters({ ...filters, showNeverConnected: e.target.checked })
-          }
-        />
-        <Form.Check
-          type="checkbox"
-          id="checkbox-deletion-in-progress"
-          label="Deletion in progress"
-          checked={showDeletionInProgress}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onUpdateFilters({ ...filters, showDeletionInProgress: e.target.checked })
-          }
-        />
-      </Form.Group>
-      <Form.Group controlId="filterActiveSince" className="mb-4">
-        <Form.Label>
-          <b>Active since</b>
-        </Form.Label>
-        <div className="d-block">
-          <DatePicker
-            maxDate={new Date()}
-            selected={activeSinceDate}
-            onChange={(date: Date) =>
-              onUpdateFilters({
-                ...filters,
-                activeSinceDate: date,
-                showConnected: true,
-                showDisconnected: true,
-                showNeverConnected: true,
-              })
+      <Stack gap={3}>
+        <Form.Group controlId="filterId">
+          <Form.Label>
+            <b>Device ID/name</b>
+          </Form.Label>
+          <Form.Control
+            type="text"
+            value={deviceId}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onUpdateFilters({ ...filters, deviceId: e.target.value })
             }
-            customInput={<Form.Control type="search" />}
           />
+        </Form.Group>
+        <Form.Group controlId="filterStatus">
+          <Form.Label>
+            <b>Device status</b>
+          </Form.Label>
+          <Form.Check
+            type="checkbox"
+            id="checkbox-connected"
+            label="Connected"
+            checked={showConnected}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onUpdateFilters({ ...filters, showConnected: e.target.checked })
+            }
+          />
+          <Form.Check
+            type="checkbox"
+            id="checkbox-disconnected"
+            label="Disconnected"
+            checked={showDisconnected}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onUpdateFilters({ ...filters, showDisconnected: e.target.checked })
+            }
+          />
+          <Form.Check
+            type="checkbox"
+            id="checkbox-never-connected"
+            label="Never connected"
+            checked={showNeverConnected}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onUpdateFilters({ ...filters, showNeverConnected: e.target.checked })
+            }
+          />
+          <Form.Check
+            type="checkbox"
+            id="checkbox-deletion-in-progress"
+            label="Deletion in progress"
+            checked={showDeletionInProgress}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onUpdateFilters({ ...filters, showDeletionInProgress: e.target.checked })
+            }
+          />
+        </Form.Group>
+        <Form.Group controlId="filterActiveSince">
+          <Form.Label>
+            <b>Active since</b>
+          </Form.Label>
+          <div className="d-block">
+            <DatePicker
+              maxDate={new Date()}
+              selected={activeSinceDate}
+              onChange={(date: Date) =>
+                onUpdateFilters({
+                  ...filters,
+                  activeSinceDate: date,
+                  showConnected: true,
+                  showDisconnected: true,
+                  showNeverConnected: true,
+                })
+              }
+              customInput={<Form.Control type="search" />}
+            />
+          </div>
+        </Form.Group>
+        <div>
+          <b>Attributes</b>
         </div>
-      </Form.Group>
-      <div className="mb-2">
-        <b>Attributes</b>
-      </div>
-      <Form.Group controlId="filterAttributeKey" className="mb-2">
-        <Form.Label>Key</Form.Label>
-        <Form.Control
-          type="text"
-          value={attributeKey}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onUpdateFilters({ ...filters, attributeKey: e.target.value })
-          }
-        />
-      </Form.Group>
-      <Form.Group controlId="filterAttributeValue" className="mb-4">
-        <Form.Label>Value</Form.Label>
-        <Form.Control
-          type="text"
-          value={attributeValue}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            onUpdateFilters({ ...filters, attributeValue: e.target.value })
-          }
-        />
-      </Form.Group>
+        <Form.Group controlId="filterAttributeKey">
+          <Form.Label>Key</Form.Label>
+          <Form.Control
+            type="text"
+            value={attributeKey}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onUpdateFilters({ ...filters, attributeKey: e.target.value })
+            }
+          />
+        </Form.Group>
+        <Form.Group controlId="filterAttributeValue">
+          <Form.Label>Value</Form.Label>
+          <Form.Control
+            type="text"
+            value={attributeValue}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onUpdateFilters({ ...filters, attributeValue: e.target.value })
+            }
+          />
+        </Form.Group>
+      </Stack>
     </Form>
   );
 };
@@ -503,7 +515,7 @@ export default (): React.ReactElement => {
                   </Col>
                   <Col xs="auto" className="p-1">
                     <div className="p-2 mb-2" onClick={() => setShowSidebar(!showSidebar)}>
-                      <Icon icon="filter" className="mr-1" />
+                      <Icon icon="filter" className="me-1" />
                       {showSidebar && <b>Filters</b>}
                     </div>
                     {showSidebar && (

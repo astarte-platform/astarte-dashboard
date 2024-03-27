@@ -17,7 +17,7 @@
 */
 
 import React, { useCallback, useMemo } from 'react';
-import { Col, Form } from 'react-bootstrap';
+import { Col, Form, Row, Stack } from 'react-bootstrap';
 import {
   AstarteInterface,
   AstarteMapping,
@@ -132,7 +132,7 @@ const SimpleTriggerForm = ({
   }, [simpleTriggerInterface, triggerMatchPath]);
 
   const handleTriggerTypeChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
       const { value } = e.currentTarget;
       const type = value as AstarteSimpleTrigger['type'];
       onChange(type === 'data_trigger' ? defaultSimpleDataTrigger : defaultSimpleDeviceTrigger);
@@ -141,7 +141,7 @@ const SimpleTriggerForm = ({
   );
 
   const handleTriggerConditionChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
       const { value } = e.currentTarget;
       const on = value as AstarteSimpleTrigger['on'];
       onChange({ ...simpleTrigger, on } as AstarteSimpleTrigger);
@@ -150,7 +150,7 @@ const SimpleTriggerForm = ({
   );
 
   const handleTriggerTargetChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
       const { value } = e.currentTarget;
       const target = value as 'all_devices' | 'device' | 'group';
       if (target === 'device') {
@@ -181,7 +181,7 @@ const SimpleTriggerForm = ({
   );
 
   const handleTriggerInterfaceNameChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
       const { value } = e.target;
       const interfaceName = value;
       const newSimpleTrigger = {
@@ -207,7 +207,7 @@ const SimpleTriggerForm = ({
   );
 
   const handleTriggerInterfaceMajorChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
       const { value } = e.target;
       const interfaceMajor = parseInt(value, 10);
       onChange({
@@ -238,7 +238,7 @@ const SimpleTriggerForm = ({
   );
 
   const handleTriggerInterfaceOperatorChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
       const { value } = e.target;
       const valueMatchOperator = value as AstarteSimpleDataTrigger['valueMatchOperator'];
       if (valueMatchOperator === '*') {
@@ -361,209 +361,205 @@ const SimpleTriggerForm = ({
 
   return (
     <Form>
-      <Form.Row className="mb-2">
-        <Col sm={12}>
-          <Form.Group controlId="triggerSimpleTriggerType">
-            <Form.Label>Trigger type</Form.Label>
-            <Form.Control
-              as="select"
-              name="triggerSimpleTriggerType"
-              disabled={isReadOnly}
-              value={_.get(simpleTrigger, 'type')}
-              onChange={handleTriggerTypeChange}
-              isInvalid={_.get(validationErrors, 'type') != null}
-            >
-              <option value="device_trigger">Device Trigger</option>
-              <option value="data_trigger">Data Trigger</option>
-            </Form.Control>
-            <Form.Control.Feedback type="invalid">
-              {_.get(validationErrors, 'type')}
-            </Form.Control.Feedback>
-          </Form.Group>
-        </Col>
-      </Form.Row>
-      <Form.Row className="mb-2">
-        <Col sm={hasTargetDevice || hasTargetGroup ? 4 : 12}>
-          <Form.Group controlId="triggerTargetSelect">
-            <Form.Label>Target</Form.Label>
-            <Form.Control
-              as="select"
-              name="triggerTargetSelect"
-              disabled={isReadOnly}
-              value={triggerTargetType}
-              onChange={handleTriggerTargetChange}
-            >
-              <option value="all_devices">All devices</option>
-              <option value="device">Device</option>
-              <option value="group">Group</option>
-            </Form.Control>
-          </Form.Group>
-        </Col>
-        {hasTargetDevice && (
-          <Col sm={8}>
-            <Form.Group controlId="triggerDeviceId">
-              <Form.Label>Device id</Form.Label>
-              <Form.Control
-                type="text"
-                autoComplete="off"
-                required
-                readOnly={isReadOnly}
-                value={_.get(simpleTrigger, 'deviceId') || ''}
-                onChange={handleTriggerTargetDeviceChange}
-                isInvalid={_.get(validationErrors, 'deviceId') != null}
-              />
+      <Stack gap={3}>
+        <Row className="mb-2">
+          <Col sm={12}>
+            <Form.Group controlId="triggerSimpleTriggerType">
+              <Form.Label>Trigger type</Form.Label>
+              <Form.Select
+                name="triggerSimpleTriggerType"
+                disabled={isReadOnly}
+                value={_.get(simpleTrigger, 'type')}
+                onChange={handleTriggerTypeChange}
+                isInvalid={_.get(validationErrors, 'type') != null}
+              >
+                <option value="device_trigger">Device Trigger</option>
+                <option value="data_trigger">Data Trigger</option>
+              </Form.Select>
               <Form.Control.Feedback type="invalid">
-                {_.get(validationErrors, 'deviceId')}
+                {_.get(validationErrors, 'type')}
               </Form.Control.Feedback>
             </Form.Group>
           </Col>
-        )}
-        {hasTargetGroup && (
-          <Col sm={8}>
-            <Form.Group controlId="triggerGroupName">
-              <Form.Label>Group Name</Form.Label>
-              <Form.Control
-                type="text"
-                autoComplete="off"
-                required
-                readOnly={isReadOnly}
-                value={_.get(simpleTrigger, 'groupName') || ''}
-                onChange={handleTriggerTargetGroupChange}
-                isInvalid={_.get(validationErrors, 'groupName') != null}
-              />
-              <Form.Control.Feedback type="invalid">
-                {_.get(validationErrors, 'groupName')}
-              </Form.Control.Feedback>
+        </Row>
+        <Row className="mb-2">
+          <Col sm={hasTargetDevice || hasTargetGroup ? 4 : 12}>
+            <Form.Group controlId="triggerTargetSelect">
+              <Form.Label>Target</Form.Label>
+              <Form.Select
+                name="triggerTargetSelect"
+                disabled={isReadOnly}
+                value={triggerTargetType}
+                onChange={handleTriggerTargetChange}
+              >
+                <option value="all_devices">All devices</option>
+                <option value="device">Device</option>
+                <option value="group">Group</option>
+              </Form.Select>
             </Form.Group>
           </Col>
-        )}
-      </Form.Row>
-      <Form.Row className="mb-2">
-        <Col sm={12}>
-          <Form.Group controlId="triggerCondition">
-            <Form.Label>Trigger condition</Form.Label>
-            <Form.Control
-              as="select"
-              name="triggerCondition"
-              disabled={isReadOnly || isLoadingInterface}
-              value={_.get(simpleTrigger, 'on')}
-              onChange={handleTriggerConditionChange}
-              isInvalid={_.get(validationErrors, 'on') != null}
-            >
-              {renderTriggerConditionOptions()}
-            </Form.Control>
-            <Form.Control.Feedback type="invalid">
-              {_.get(validationErrors, 'on')}
-            </Form.Control.Feedback>
-          </Form.Group>
-        </Col>
-      </Form.Row>
-      {isDataTrigger && (
-        <>
-          <Form.Row className="mb-2">
-            <Col sm={hasSelectedInterface ? 8 : 12}>
-              <Form.Group controlId="triggerInterfaceName">
-                <Form.Label>Interface name</Form.Label>
+          {hasTargetDevice && (
+            <Col sm={8}>
+              <Form.Group controlId="triggerDeviceId">
+                <Form.Label>Device id</Form.Label>
                 <Form.Control
-                  as="select"
-                  name="triggerInterfaceName"
-                  disabled={isReadOnly || isLoadingInterfacesName}
-                  value={triggerInterfaceName || '*'}
-                  onChange={handleTriggerInterfaceNameChange}
-                  isInvalid={_.get(validationErrors, 'interfaceName') != null}
-                >
-                  {renderInterfaceNameOptions()}
-                </Form.Control>
+                  type="text"
+                  autoComplete="off"
+                  required
+                  readOnly={isReadOnly}
+                  value={_.get(simpleTrigger, 'deviceId') || ''}
+                  onChange={handleTriggerTargetDeviceChange}
+                  isInvalid={_.get(validationErrors, 'deviceId') != null}
+                />
                 <Form.Control.Feedback type="invalid">
-                  {_.get(validationErrors, 'interfaceName')}
+                  {_.get(validationErrors, 'deviceId')}
                 </Form.Control.Feedback>
               </Form.Group>
             </Col>
-            {hasSelectedInterface && (
-              <Col sm={4}>
-                <Form.Group controlId="triggerInterfaceMajor">
-                  <Form.Label>Interface major</Form.Label>
-                  <Form.Control
-                    as="select"
-                    name="triggerInterfaceMajor"
-                    disabled={isReadOnly || isLoadingInterfaceMajors || isLoadingInterface}
-                    value={_.get(simpleTrigger, 'interfaceMajor') || 0}
-                    onChange={handleTriggerInterfaceMajorChange}
-                    isInvalid={_.get(validationErrors, 'interfaceMajor') != null}
+          )}
+          {hasTargetGroup && (
+            <Col sm={8}>
+              <Form.Group controlId="triggerGroupName">
+                <Form.Label>Group Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  autoComplete="off"
+                  required
+                  readOnly={isReadOnly}
+                  value={_.get(simpleTrigger, 'groupName') || ''}
+                  onChange={handleTriggerTargetGroupChange}
+                  isInvalid={_.get(validationErrors, 'groupName') != null}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {_.get(validationErrors, 'groupName')}
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+          )}
+        </Row>
+        <Row className="mb-2">
+          <Col sm={12}>
+            <Form.Group controlId="triggerCondition">
+              <Form.Label>Trigger condition</Form.Label>
+              <Form.Select
+                name="triggerCondition"
+                disabled={isReadOnly || isLoadingInterface}
+                value={_.get(simpleTrigger, 'on')}
+                onChange={handleTriggerConditionChange}
+                isInvalid={_.get(validationErrors, 'on') != null}
+              >
+                {renderTriggerConditionOptions()}
+              </Form.Select>
+              <Form.Control.Feedback type="invalid">
+                {_.get(validationErrors, 'on')}
+              </Form.Control.Feedback>
+            </Form.Group>
+          </Col>
+        </Row>
+        {isDataTrigger && (
+          <>
+            <Row className="mb-2">
+              <Col sm={hasSelectedInterface ? 8 : 12}>
+                <Form.Group controlId="triggerInterfaceName">
+                  <Form.Label>Interface name</Form.Label>
+                  <Form.Select
+                    name="triggerInterfaceName"
+                    disabled={isReadOnly || isLoadingInterfacesName}
+                    value={triggerInterfaceName || '*'}
+                    onChange={handleTriggerInterfaceNameChange}
+                    isInvalid={_.get(validationErrors, 'interfaceName') != null}
                   >
-                    {renderInterfaceMajorOptions()}
-                  </Form.Control>
+                    {renderInterfaceNameOptions()}
+                  </Form.Select>
                   <Form.Control.Feedback type="invalid">
-                    {_.get(validationErrors, 'interfaceMajor')}
+                    {_.get(validationErrors, 'interfaceName')}
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
-            )}
-          </Form.Row>
-          {hasSelectedInterface && (
-            <>
-              <Form.Row className="mb-2">
-                <Col sm={12}>
-                  <Form.Group controlId="triggerPath">
-                    <Form.Label>Path</Form.Label>
-                    <Form.Control
-                      type="text"
-                      autoComplete="off"
-                      required
-                      readOnly={isReadOnly || isLoadingInterfaceMajors || isLoadingInterface}
-                      value={_.get(simpleTrigger, 'matchPath') || ''}
-                      isInvalid={_.get(validationErrors, 'matchPath') != null}
-                      onChange={handleTriggerInterfacePathChange}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {_.get(validationErrors, 'matchPath')}
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Col>
-              </Form.Row>
-              <Form.Row className="mb-2">
+              {hasSelectedInterface && (
                 <Col sm={4}>
-                  <Form.Group controlId="triggerOperator">
-                    <Form.Label>Operator</Form.Label>
-                    <Form.Control
-                      as="select"
-                      name="triggerOperator"
+                  <Form.Group controlId="triggerInterfaceMajor">
+                    <Form.Label>Interface major</Form.Label>
+                    <Form.Select
+                      name="triggerInterfaceMajor"
                       disabled={isReadOnly || isLoadingInterfaceMajors || isLoadingInterface}
-                      value={triggerValueMatchOperator || '*'}
-                      onChange={handleTriggerInterfaceOperatorChange}
-                      isInvalid={_.get(validationErrors, 'valueMatchOperator') != null}
+                      value={_.get(simpleTrigger, 'interfaceMajor') || 0}
+                      onChange={handleTriggerInterfaceMajorChange}
+                      isInvalid={_.get(validationErrors, 'interfaceMajor') != null}
                     >
-                      {renderTriggerOperatorOptions()}
-                    </Form.Control>
+                      {renderInterfaceMajorOptions()}
+                    </Form.Select>
                     <Form.Control.Feedback type="invalid">
-                      {_.get(validationErrors, 'valueMatchOperator')}
+                      {_.get(validationErrors, 'interfaceMajor')}
                     </Form.Control.Feedback>
                   </Form.Group>
                 </Col>
-                {hasSelectedOperator && (
-                  <Col sm={8}>
-                    <Form.Group controlId="triggerKnownValue">
-                      <Form.Label>Value</Form.Label>
+              )}
+            </Row>
+            {hasSelectedInterface && (
+              <>
+                <Row className="mb-2">
+                  <Col sm={12}>
+                    <Form.Group controlId="triggerPath">
+                      <Form.Label>Path</Form.Label>
                       <Form.Control
                         type="text"
                         autoComplete="off"
                         required
                         readOnly={isReadOnly || isLoadingInterfaceMajors || isLoadingInterface}
-                        value={String(_.get(simpleTrigger, 'knownValue') ?? '')}
-                        onChange={handleTriggerInterfaceKnownValueChange}
-                        isInvalid={_.get(validationErrors, 'knownValue') != null}
+                        value={_.get(simpleTrigger, 'matchPath') || ''}
+                        isInvalid={_.get(validationErrors, 'matchPath') != null}
+                        onChange={handleTriggerInterfacePathChange}
                       />
                       <Form.Control.Feedback type="invalid">
-                        {_.get(validationErrors, 'knownValue')}
+                        {_.get(validationErrors, 'matchPath')}
                       </Form.Control.Feedback>
                     </Form.Group>
                   </Col>
-                )}
-              </Form.Row>
-            </>
-          )}
-        </>
-      )}
+                </Row>
+                <Row className="mb-2">
+                  <Col sm={4}>
+                    <Form.Group controlId="triggerOperator">
+                      <Form.Label>Operator</Form.Label>
+                      <Form.Select
+                        name="triggerOperator"
+                        disabled={isReadOnly || isLoadingInterfaceMajors || isLoadingInterface}
+                        value={triggerValueMatchOperator || '*'}
+                        onChange={handleTriggerInterfaceOperatorChange}
+                        isInvalid={_.get(validationErrors, 'valueMatchOperator') != null}
+                      >
+                        {renderTriggerOperatorOptions()}
+                      </Form.Select>
+                      <Form.Control.Feedback type="invalid">
+                        {_.get(validationErrors, 'valueMatchOperator')}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                  {hasSelectedOperator && (
+                    <Col sm={8}>
+                      <Form.Group controlId="triggerKnownValue">
+                        <Form.Label>Value</Form.Label>
+                        <Form.Control
+                          type="text"
+                          autoComplete="off"
+                          required
+                          readOnly={isReadOnly || isLoadingInterfaceMajors || isLoadingInterface}
+                          value={String(_.get(simpleTrigger, 'knownValue') ?? '')}
+                          onChange={handleTriggerInterfaceKnownValueChange}
+                          isInvalid={_.get(validationErrors, 'knownValue') != null}
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {_.get(validationErrors, 'knownValue')}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    </Col>
+                  )}
+                </Row>
+              </>
+            )}
+          </>
+        )}
+      </Stack>
     </Form>
   );
 };
