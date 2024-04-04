@@ -110,16 +110,17 @@ describe('Login tests', () => {
       cy.get('textarea[id=astarteToken]').paste(this.realm.infinite_token);
       cy.get('.btn[type=submit]').click();
 
-      cy.wrap(localStorage).its('session').then(JSON.parse).should('deep.eq', {
-        _version: 1,
-        realm: this.realm.name,
-        token: this.realm.infinite_token,
-        authUrl: null,
-      });
+
+      cy.getCookie('session')
+        .should('have.property', 'value', encodeURIComponent(JSON.stringify({
+          realm: this.realm.name,
+          token: this.realm.infinite_token,
+          authUrl: null,
+        })))
 
       cy.get('#main-navbar').contains('Logout').scrollIntoView().click();
 
-      cy.wrap(localStorage).its('session').should('not.exist');
+      cy.getCookie("session").should('not.exist');
     });
   });
 
