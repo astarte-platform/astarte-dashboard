@@ -22,6 +22,7 @@ import { createRoot } from 'react-dom/client';
 import './styles/main.scss';
 import App from './App';
 import type { DashboardConfig } from './types';
+import { CookiesProvider } from 'react-cookie';
 
 fetch('/user-config/config.json')
   .then((response) => response.json())
@@ -43,7 +44,9 @@ fetch('/user-config/config.json')
 
     root.render(
       <React.StrictMode>
-        <App config={config} />
+        <CookiesProvider defaultSetOptions={{ path: '/' }}>
+          <App config={config} />
+        </CookiesProvider>
       </React.StrictMode>,
     );
   });

@@ -19,7 +19,7 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import AstarteClient, { AstarteToken } from 'astarte-client';
 import _ from 'lodash';
-
+import { useCookies } from 'react-cookie';
 import type { DashboardConfig } from './types';
 
 const parseAstarteApiUrls = (params: DashboardConfig) => {
@@ -70,30 +70,6 @@ type Session = {
 
 const SESSION_VERSION = 1;
 
-function saveSession(session?: Session | null): void {
-  if (!session) {
-    localStorage.removeItem('session');
-  } else {
-    localStorage.setItem('session', JSON.stringify({ ...session, _version: SESSION_VERSION }));
-  }
-}
-
-function loadSession(): Session | null {
-  let session: Session | null = null;
-  try {
-    session = JSON.parse(localStorage.getItem('session') || '');
-  } catch {
-    session = null;
-  }
-  if (session && _.get(session, '_version') === SESSION_VERSION) {
-    const tokenValidation = AstarteToken.validate(session.token);
-    if (tokenValidation === 'valid') {
-      return _.omit(session, '_version');
-    }
-  }
-  return null;
-}
-
 type AstarteContextValue = {
   client: AstarteClient;
   realm: string | null;
@@ -115,14 +91,20 @@ const AstarteProvider = ({
   config,
   ...props
 }: AstarteProviderProps): React.ReactElement => {
-  const [session, setSession] = useState(loadSession());
+  const [cookie, setCookie, removeCookie] = useCookies(['session']);
+  if (cookie.session?.token) {
+    const tokenValidation = AstarteToken.validate(cookie.session.token ?? '');
+    if (tokenValidation != 'valid') {
+      removeCookie('session');
+    }
+  }
 
   const client = useMemo(() => {
     const apiConfig = parseAstarteApiUrls(config);
-    const authConfig = _.pick(session, ['realm', 'token']);
+    const authConfig = _.pick(cookie.session, ['realm', 'token']);
     const clientConfig = _.merge({}, apiConfig, authConfig);
     return new AstarteClient(clientConfig);
-  }, [config]);
+  }, [config, cookie, cookie.session]);
 
   const updateSession = useCallback(
     (newSession: Session | null) => {
@@ -132,10 +114,13 @@ const AstarteProvider = ({
           token: newSession.token,
         },
       );
-      setSession(newSession);
-      saveSession(newSession);
+      if (!newSession) {
+        removeCookie('session');
+      } else {
+        setCookie('session', JSON.stringify({ ...newSession }));
+      }
     },
-    [client],
+    [client, cookie, cookie.session],
   );
 
   const login = useCallback(
@@ -144,13 +129,17 @@ const AstarteProvider = ({
       if (!realm || !token) {
         return false;
       }
-      if (session?.authUrl === authUrl && session.realm === realm && session.token === token) {
+      if (
+        cookie.session?.authUrl === authUrl &&
+        cookie.session.realm === realm &&
+        cookie.session.token === token
+      ) {
         return true;
       }
       updateSession({ realm, token, authUrl });
       return true;
     },
-    [session, updateSession],
+    [cookie, cookie.session, updateSession],
   );
 
   const logout = useCallback(() => updateSession(null), [updateSession]);
@@ -158,13 +147,13 @@ const AstarteProvider = ({
   const contextValue = useMemo(
     () => ({
       client,
-      realm: session && session.realm,
-      token: session && new AstarteToken(session.token),
-      isAuthenticated: session != null,
+      realm: cookie.session && cookie.session.realm,
+      token: cookie.session && new AstarteToken(cookie.session.token),
+      isAuthenticated: cookie.session != null,
       login,
       logout,
     }),
-    [client, login, logout, session],
+    [client, login, logout, cookie.session, cookie],
   );
 
   return (
