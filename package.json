@@ -40,7 +40,7 @@
     "cypress:open": "cypress open"
   },
   "devDependencies": {
-    "cypress": "^12.16.0",
+    "cypress": "^13.7.3",
     "prettier": "^3.2.5"
   },
   "dependencies": {
