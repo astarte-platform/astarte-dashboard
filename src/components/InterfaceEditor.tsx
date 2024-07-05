@@ -35,6 +35,8 @@ import _ from 'lodash';
 
 import Icon from './Icon';
 import MappingEditor from './MappingEditor';
+import JsonEditor from './JsonEditor';
+import { AstarteInterfaceSchema } from '../schemas/jsonSchemas';
 
 interface FormControlWarningProps {
   message?: string;
@@ -777,7 +779,7 @@ export default ({
 
   return (
     <Row>
-      <Col md={isSourceVisible ? 6 : 12}>
+      <Col md={isSourceVisible ? 6 : 12} className="z-1">
         <Container fluid className="bg-white rounded p-3">
           <Form>
             <Stack gap={3}>
@@ -1103,16 +1105,22 @@ export default ({
         <Col md={6}>
           <Form.Group controlId="interfaceSource" className="h-100 d-flex flex-column">
             <Form.Control
-              as="textarea"
-              className="flex-grow-1 font-monospace"
-              value={interfaceSource}
-              onChange={handleInterfaceSourceChange}
+              as="div"
               autoComplete="off"
               required
               isValid={isValidInterfaceSource}
               isInvalid={!isValidInterfaceSource}
-            />
-            <Form.Control.Feedback type="invalid">{interfaceSourceError}</Form.Control.Feedback>
+              className="flex-grow-1 font-monospace"
+            >
+              <JsonEditor
+                resource={AstarteInterfaceSchema}
+                value={interfaceSource}
+                onChange={handleInterfaceSourceChange}
+              />
+            </Form.Control>
+            {!isValidInterfaceSource && (
+              <Form.Control.Feedback type="invalid">{interfaceSourceError}</Form.Control.Feedback>
+            )}
           </Form.Group>
         </Col>
       )}
