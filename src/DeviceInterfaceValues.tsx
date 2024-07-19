@@ -17,7 +17,7 @@
 */
 
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Button, Card, Col, Container, Form, Modal, Row, Spinner, Table } from 'react-bootstrap';
 import {
   AstarteDataTuple,
@@ -663,6 +663,11 @@ export default (): React.ReactElement => {
           <BackButton href={`/devices/${deviceId}/edit`} />
           Interface Data
         </h2>
+        {iface?.type === 'datastream' && (
+          <Link to={`/devices/${deviceId}/interfaces/${interfaceName}/datastream/${iface.major}`}>
+            Filter Data
+          </Link>
+        )}
         {astarte.token?.can(
           'appEngine',
           'POST',
