@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - For server-owned interfaces, display a form to send data to the device, ([#417](https://github.com/astarte-platform/astarte-dashboard/issues/417)).
 - Add a "keep me logged in" during login, ([#451](https://github.com/astarte-platform/astarte-dashboard/issues/451)).
 - Allow unsetting property endpoints, ([#450](https://github.com/astarte-platform/astarte-dashboard/issues/450)).
-
+- Allow to filtering time of Interface DataStream data, ([[#441](https://github.com/astarte-platform/astarte-dashboard/issues/441)]).
 ### Changed
 - Adapt Device Stats and PieChart to exclude interfaces with 0 exchanged messages, ([#428](https://github.com/astarte-platform/astarte-dashboard/issues/428)).
 - Persist login using cookies instead of localStorage, ([#419](https://github.com/astarte-platform/astarte-dashboard/issues/419)).
