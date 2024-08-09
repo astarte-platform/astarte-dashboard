@@ -31,7 +31,7 @@ Cypress.Commands.add('login', () => {
       realm: realm.name,
       token: realm.infinite_token,
     };
-    cy.setCookie('session', JSON.stringify(session))
+    cy.setCookie('session', JSON.stringify(session));
   });
 });
 
@@ -103,3 +103,25 @@ Cypress.Commands.add(
       });
   },
 );
+
+Cypress.Commands.add('pasteJsonIntoEditor', ({ json_object }) => {
+  cy.waitForMonacoEditor().then((editor) => {
+    editor.setValue(JSON.stringify(json_object, null, 2));
+  });
+});
+
+Cypress.Commands.add('waitForMonacoEditor', () => {
+  cy.window().should('have.property', 'monaco').then((monaco) => {
+    return new Cypress.Promise((resolve, reject) => {
+      const checkEditorInitialized = () => {
+        const editorModels = monaco.editor.getModels();
+        if (editorModels.length > 0) {
+          resolve(editorModels[0]);
+        } else {
+          setTimeout(checkEditorInitialized, 1000);
+        }
+      };
+      checkEditorInitialized();
+    });
+  });
+});

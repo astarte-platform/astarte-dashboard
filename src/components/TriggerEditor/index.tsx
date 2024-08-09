@@ -29,6 +29,8 @@ import EditAmqpHeaderModal from './EditAmqpHeaderModal';
 import EditHttpHeaderModal from './EditHttpHeaderModal';
 import DeleteAmqpHeaderModal from './DeleteAmqpHeaderModal';
 import DeleteHttpHeaderModal from './DeleteHttpHeaderModal';
+import JsonEditor from 'components/JsonEditor';
+import { AstarteTriggerSchema } from 'schemas/jsonSchemas';
 
 const defaultTrigger: AstarteTrigger = {
   name: '',
@@ -200,22 +202,25 @@ export default ({
 
   const handleFetchInterfacesForTrigger = useCallback(
     async (trigger: AstarteTrigger) => {
-      await handleFetchInterfacesName();
+      const names = await handleFetchInterfacesName();
       const interfaceName = _.get(trigger, 'simpleTriggers[0].interfaceName') as string | undefined;
       if (!interfaceName || interfaceName === '*') {
         return trigger;
       }
-      const ifaceMajors = await handleFetchInterfaceMajors(interfaceName);
-      let ifaceMajor: number | undefined = _.get(trigger, 'simpleTriggers[0].interfaceMajor');
-      if (ifaceMajor == null) {
-        if (ifaceMajors.length === 0) {
-          return trigger;
+      if (interfaceName in names) {
+        const ifaceMajors = await handleFetchInterfaceMajors(interfaceName);
+        let ifaceMajor: number | undefined = _.get(trigger, 'simpleTriggers[0].interfaceMajor');
+        if (ifaceMajor == null) {
+          if (ifaceMajors.length === 0) {
+            return trigger;
+          }
+          ifaceMajor = Math.max(...ifaceMajors);
+          _.set(trigger as AstarteTrigger, 'simpleTriggers[0].interfaceMajor', ifaceMajor);
         }
-        ifaceMajor = Math.max(...ifaceMajors);
-        _.set(trigger as AstarteTrigger, 'simpleTriggers[0].interfaceMajor', ifaceMajor);
+
+        const interfaceMajor = ifaceMajor;
+        await handleFetchInterface({ interfaceName, interfaceMajor });
       }
-      const interfaceMajor = ifaceMajor;
-      await handleFetchInterface({ interfaceName, interfaceMajor });
       return trigger;
     },
     [handleFetchInterfacesName, handleFetchInterfaceMajors, handleFetchInterface],
@@ -381,6 +386,7 @@ export default ({
       const { value } = e.target;
       setTriggerSource(value);
       let triggerSourceJSON: Record<string, unknown> | null = null;
+
       try {
         triggerSourceJSON = JSON.parse(value);
       } catch {
@@ -530,15 +536,17 @@ export default ({
         <Col md={6}>
           <Form.Group controlId="triggerSource" className="h-100 d-flex flex-column">
             <Form.Control
-              as="textarea"
+              as="div"
               className="flex-grow-1 font-monospace"
               autoComplete="off"
               spellCheck={false}
               required
-              readOnly={isReadOnly}
+              isInvalid={!!triggerSourceError}
+            />
+            <JsonEditor
+              resource={AstarteTriggerSchema(interfacesName, realm, policiesName)}
               value={triggerSource}
               onChange={handleTriggerSourceChange}
-              isInvalid={!!triggerSourceError}
             />
             <Form.Control.Feedback type="invalid">{triggerSourceError}</Form.Control.Feedback>
           </Form.Group>
