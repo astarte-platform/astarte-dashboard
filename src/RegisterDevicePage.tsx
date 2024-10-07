@@ -18,11 +18,12 @@
 
 /* @global document */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import { Button, Col, Form, Row, Spinner, Stack, Table } from 'react-bootstrap';
 import type { AstarteDevice, AstarteInterfaceDescriptor } from 'astarte-client';
+import semver from 'semver';
 
 import Icon from './components/Icon';
 import ConfirmModal from './components/modals/Confirm';
@@ -70,6 +71,12 @@ interface InterfaceIntrospectionRowProps {
   onRemove: () => void;
 }
 
+interface FetchedInterface {
+  name: string;
+  major: number;
+  minor: number;
+}
+
 const InterfaceIntrospectionRow = ({
   interfaceDescriptor,
   onRemove,
@@ -96,13 +103,27 @@ const IntrospectionControlRow = ({
     major: 0,
     minor: 1,
   };
-
+  const astarte = useAstarte();
+  const [selectedOption, setSelectedOption] = useState<string>('');
+  const [options, setOptions] = useState<{ value: string; label: string }[]>([]);
   const [interfaceDescriptor, setInterfaceDescriptor] =
     useState<AstarteInterfaceDescriptor>(initialState);
+  const [selectedInterfaceData, setSelectedInterfaceData] = useState<FetchedInterface[]>([]);
+  const [greaterRealmManagementVersion, setGreaterRealmManagementVersion] = useState(false);
 
-  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    setInterfaceDescriptor((state) => ({ ...state, name: value }));
+  const handleNameChange = (value: string) => {
+    setSelectedOption(value);
+
+    const selectedInterface = selectedInterfaceData.find((data) => data.name === value);
+    if (selectedInterface) {
+      setInterfaceDescriptor({
+        name: selectedInterface.name,
+        major: selectedInterface.major,
+        minor: selectedInterface.minor,
+      });
+    } else {
+      setInterfaceDescriptor((state) => ({ ...state, name: value }));
+    }
   };
 
   const handleMajorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,15 +142,69 @@ const IntrospectionControlRow = ({
     }));
   };
 
+  const fetchInterfacesInfo = useCallback(async () => {
+    const interfacesData = await astarte.client.getInterfaces();
+    const realmManagementVersion = await astarte.client.getRealmManagementVersion();
+    const realmManagementVersionForCompare = '1.2.0';
+
+    const isVersionGreaterOrEqual = (currentVersion: string, compareVersion: string) => {
+      const normalizedCurrent = currentVersion.replace(/-.*$/, '');
+      return semver.gte(normalizedCurrent, compareVersion);
+    };
+    if (isVersionGreaterOrEqual(realmManagementVersion, realmManagementVersionForCompare)) {
+      const fetchedInterfaces: FetchedInterface[] = interfacesData.map((interfaceDetail: any) => ({
+        name: interfaceDetail.interface_name,
+        major: interfaceDetail.version_major,
+        minor: interfaceDetail.version_minor,
+      }));
+      setSelectedInterfaceData(fetchedInterfaces);
+      setGreaterRealmManagementVersion(true);
+      return fetchedInterfaces;
+    } else {
+      setGreaterRealmManagementVersion(false);
+    }
+  }, [astarte.client]);
+
+  useEffect(() => {
+    const loadOptions = async () => {
+      const interfaces = await fetchInterfacesInfo();
+      if (interfaces) {
+        const interfaceOptions = interfaces.map((iface) => ({
+          value: iface.name,
+          label: iface.name,
+        }));
+        setOptions(interfaceOptions);
+      }
+    };
+    loadOptions();
+  }, [fetchInterfacesInfo]);
+
   return (
     <tr>
       <td>
-        <Form.Control
-          type="text"
-          placeholder="Interface name"
-          value={interfaceDescriptor.name}
-          onChange={handleNameChange}
-        />
+        {greaterRealmManagementVersion ? (
+          <Form.Select
+            value={selectedOption}
+            onChange={(e) => handleNameChange(e.target.value)}
+            className="form-control"
+          >
+            <option value="" disabled>
+              Interface name
+            </option>
+            {options.map((option, index) => (
+              <option key={index} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </Form.Select>
+        ) : (
+          <Form.Control
+            type="text"
+            placeholder="Interface name"
+            value={interfaceDescriptor.name}
+            onChange={(e) => handleNameChange(e.target.value)}
+          />
+        )}
       </td>
       <td>
         <Form.Control
@@ -137,6 +212,7 @@ const IntrospectionControlRow = ({
           min="0"
           value={interfaceDescriptor.major}
           onChange={handleMajorChange}
+          disabled={greaterRealmManagementVersion}
         />
       </td>
       <td>
@@ -145,6 +221,7 @@ const IntrospectionControlRow = ({
           min="0"
           value={interfaceDescriptor.minor}
           onChange={handleMinorChange}
+          disabled={greaterRealmManagementVersion}
         />
       </td>
       <td>
@@ -174,7 +251,7 @@ const InstrospectionTable = ({
   onAddInterface,
   onRemoveInterface,
 }: InstrospectionTableProps): React.ReactElement => (
-  <Table className="mb-4" responsive>
+  <Table className="mb-4">
     <thead>
       <tr>
         <th>Interface name</th>
