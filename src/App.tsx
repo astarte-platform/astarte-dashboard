@@ -30,6 +30,7 @@ import AstarteProvider, { useAstarte } from './AstarteManager';
 import type { DashboardConfig } from './types';
 import Snackbar from './ui/Snackbar';
 import createReduxStore from './store';
+import { MonacoProvider } from 'components/MonacoContext';
 
 const DashboardSidebar = () => {
   const config = useConfig();
@@ -142,15 +143,17 @@ interface Props {
 export default ({ config }: Props): React.ReactElement => (
   <AlertsProvider>
     <RouterProvider>
-      {config ? (
-        <ConfigProvider config={config}>
-          <AstarteProvider config={config}>
-            <Dashboard />
-          </AstarteProvider>
-        </ConfigProvider>
-      ) : (
-        <StandaloneEditor />
-      )}
+      <MonacoProvider>
+        {config ? (
+          <ConfigProvider config={config}>
+            <AstarteProvider config={config}>
+              <Dashboard />
+            </AstarteProvider>
+          </ConfigProvider>
+        ) : (
+          <StandaloneEditor />
+        )}
+      </MonacoProvider>
     </RouterProvider>
     <Snackbar />
   </AlertsProvider>

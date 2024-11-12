@@ -13,8 +13,14 @@ const parseMappingOptions = (mapping) => {
 };
 
 const setupInterfaceEditorFromSource = (iface) => {
-  cy.get('#interfaceSource').clear().paste(JSON.stringify(iface));
-  cy.wait(500);
+  cy.get('.monaco-editor')
+    .should('be.visible')
+    .then(() => {
+      cy.window().then((win) => {
+        const editor = win.monaco.editor.getModels()[0];
+        editor.setValue(JSON.stringify(iface, null, 4));
+      });
+    });
 };
 
 const setupInterfaceEditorFromUI = (iface) => {
@@ -42,14 +48,8 @@ const setupInterfaceEditorFromUI = (iface) => {
     }
   }
   if (iface.aggregation === 'object') {
-    const {
-      reliability,
-      explicitTimestamp,
-      retention,
-      expiry,
-      databaseRetention,
-      databaseTTL,
-    } = parseMappingOptions(_.get(iface.mappings, '0'));
+    const { reliability, explicitTimestamp, retention, expiry, databaseRetention, databaseTTL } =
+      parseMappingOptions(_.get(iface.mappings, '0'));
     cy.get('#objectMappingReliability').scrollIntoView().select(reliability);
     if (explicitTimestamp) {
       cy.get('#objectMappingExplicitTimestamp').scrollIntoView().check();
@@ -128,7 +128,7 @@ const checkMappingEditorUIValues = ({ mapping, type, aggregation = 'individual' 
     .should('be.visible')
     .within(() => {
       cy.contains(mapping.endpoint);
-      cy.get('button').contains('Edit...').click();
+      cy.get('button').contains('Edit...').should('have.length', 1).click({ force: true });
     });
   cy.get('.modal.show').within(() => {
     cy.get('#mappingEndpoint')
@@ -232,14 +232,8 @@ const checkInterfaceEditorUIValues = (iface) => {
     }
   }
   if (iface.aggregation === 'object') {
-    const {
-      reliability,
-      explicitTimestamp,
-      retention,
-      expiry,
-      databaseRetention,
-      databaseTTL,
-    } = parseMappingOptions(_.get(iface.mappings, '0'));
+    const { reliability, explicitTimestamp, retention, expiry, databaseRetention, databaseTTL } =
+      parseMappingOptions(_.get(iface.mappings, '0'));
     cy.get('#objectMappingReliability')
       .scrollIntoView()
       .should('be.visible')
@@ -569,10 +563,7 @@ describe('Interface builder tests', () => {
         // Valid name
         cy.get('#interfaceName').clear().paste('com.sample.Name');
         cy.get('#interfaceName').should('not.have.class', 'is-invalid');
-        cy.get('#interfaceName')
-          .parents()
-          .get('.warning-feedback')
-          .should('not.exist');
+        cy.get('#interfaceName').parents().get('.warning-feedback').should('not.exist');
       });
 
       it('correctly reports errors in mapping editor for the endpoint field', () => {
@@ -596,6 +587,9 @@ describe('Interface builder tests', () => {
         ];
         interfaceFixtures.forEach((interfaceFixture) => {
           cy.fixture(interfaceFixture).then(({ data: iface }) => {
+            if (!iface) {
+              throw new Error(`Fixture ${interfaceFixture} did not load correctly`);
+            }
             setupInterfaceEditorFromSource(iface);
             checkInterfaceEditorUIValues(iface);
           });
@@ -609,10 +603,12 @@ describe('Interface builder tests', () => {
           'test.astarte.IndividualObjectInterface',
           'test.astarte.AggregatedObjectInterface',
         ];
+
         interfaceFixtures.forEach((interfaceFixture) => {
           cy.fixture(interfaceFixture).then(({ data: iface }) => {
             setupInterfaceEditorFromUI(iface);
             checkInterfaceEditorUIValues(iface);
+
             (iface.mappings || []).forEach((mapping) => {
               checkMappingEditorUIValues({
                 mapping,
@@ -773,6 +769,7 @@ describe('Interface builder tests', () => {
         cy.visit(
           `/interfaces/${majorInterface.interface_name}/${majorInterface.version_major}/edit`,
         );
+        cy.wait(1500);
         cy.wait('@getInterfaceRequest');
         cy.contains('Delete interface').should('not.exist');
 
@@ -792,7 +789,7 @@ describe('Interface builder tests', () => {
         cy.visit(
           `/interfaces/${draftInterface.interface_name}/${draftInterface.version_major}/edit`,
         );
-        cy.wait('@getInterfaceRequest2');
+        cy.wait('@getInterfaceRequest2', { timeout: 1500 });
         cy.contains('Delete interface').scrollIntoView().click();
         cy.get('.modal.show').within(() => {
           cy.contains(
@@ -857,28 +854,33 @@ describe('Interface builder tests', () => {
             },
           ).as('saveNoDefaultsInterfaceRequest');
           cy.visit(`/interfaces/${iface.interface_name}/${iface.version_major}/edit`);
-          cy.wait('@getInterfaceRequest');
+          cy.wait('@getInterfaceRequest', { timeout: 1500 });
+          cy.wait(2000);
+          cy.window().then((win) => {
+            cy.wrap(win.monaco).should('exist');
+            cy.wrap(win.monaco.editor).should('exist');
+          });
+
+          cy.window().then((win) => {
+            const editor = win.monaco.editor.getModels()[0];
+            cy.wrap(editor).should('exist');
+            const ifaceSource = editor.getValue();
+            expect(JSON.parse(ifaceSource)).to.deep.eq(iface);
+          });
+
           const newIface = _.merge({}, iface, {
             version_minor: iface.version_minor + 1,
             doc: 'New documentation',
           });
 
-          // Source should be displayed equal, without adding default values
-          cy.get('#interfaceSource')
-            .invoke('val')
-            .should((ifaceSource) => {
-              expect(JSON.parse(ifaceSource)).to.deep.eq(iface);
-            });
-
           cy.get('#interfaceMinor').type(`{selectall}${newIface.version_minor}`);
           cy.get('#interfaceDocumentation').clear().paste(newIface.doc);
-
-          // Source should be displayed equal, without adding default values
-          cy.get('#interfaceSource')
-            .invoke('val')
-            .should((ifaceSource) => {
-              expect(JSON.parse(ifaceSource)).to.deep.eq(newIface);
-            });
+          cy.window().then((win) => {
+            const editor = win.monaco.editor.getModels()[0];
+            cy.wrap(editor).should('exist');
+            const ifaceSource = editor.getValue();
+            expect(JSON.parse(ifaceSource)).to.deep.eq(newIface);
+          });
 
           // Interface should be saved without adding default values
           cy.get('button').contains('Apply changes').scrollIntoView().click();
@@ -905,27 +907,32 @@ describe('Interface builder tests', () => {
           ).as('saveSpecifiedDefaultsInterfaceRequest');
           cy.visit(`/interfaces/${iface.interface_name}/${iface.version_major}/edit`);
           cy.wait('@getInterfaceRequest2');
+          cy.wait(2000);
+          cy.window().then((win) => {
+            cy.wrap(win.monaco).should('exist');
+            cy.wrap(win.monaco.editor).should('exist');
+          });
+
+          cy.window().then((win) => {
+            const editor = win.monaco.editor.getModels()[0];
+            cy.wrap(editor).should('exist');
+            const ifaceSource = editor.getValue();
+            expect(JSON.parse(ifaceSource)).not.to.deep.eq(iface);
+          });
           const newIface = _.merge({}, iface, {
             version_minor: iface.version_minor + 1,
             doc: 'New documentation',
           });
 
-          // Source should not be displayed equal, since default values are stripped out
-          cy.get('#interfaceSource')
-            .invoke('val')
-            .should((ifaceSource) => {
-              expect(JSON.parse(ifaceSource)).not.to.deep.eq(iface);
-            });
-
           cy.get('#interfaceMinor').type(`{selectall}${newIface.version_minor}`);
           cy.get('#interfaceDocumentation').clear().paste(newIface.doc);
 
-          // Source should not be displayed equal, since default values are stripped out
-          cy.get('#interfaceSource')
-            .invoke('val')
-            .should((ifaceSource) => {
-              expect(JSON.parse(ifaceSource)).not.to.deep.eq(newIface);
-            });
+          cy.window().then((win) => {
+            const editor = win.monaco.editor.getModels()[0];
+            cy.wrap(editor).should('exist');
+            const ifaceSource = editor.getValue();
+            expect(JSON.parse(ifaceSource)).not.to.deep.eq(newIface);
+          });
 
           // Interface should be saved with default values stripped out
           cy.get('button').contains('Apply changes').scrollIntoView().click();
@@ -954,11 +961,9 @@ describe('Interface builder tests', () => {
             ...initialIface,
             mappings: [restOfElements],
           };
-          cy.get('#interfaceSource')
-            .clear()
-            .invoke('val', JSON.stringify(updatedIface, null, 4))
-            .type('{enter}');
 
+          // Set the updatedIface value in MonacoEditor using setupInterfaceEditorFromSource
+          setupInterfaceEditorFromSource(updatedIface);
           cy.get('[data-testid="/test"]').within(() => {
             // Check if the mapping endpoint is displayed
             cy.contains('/test');
@@ -975,11 +980,9 @@ describe('Interface builder tests', () => {
             ...updatedIface,
             version_minor: updatedIface.version_minor + 1,
           };
-          cy.get('#interfaceSource')
-            .clear()
-            .invoke('val', JSON.stringify(newIface, null, 4))
-            .type('{enter}');
 
+          // Set the newIface value in MonacoEditor using setupInterfaceEditorFromSource
+          setupInterfaceEditorFromSource(newIface);
           cy.intercept(
             'PUT',
             `/realmmanagement/v1/*/interfaces/${newIface.interface_name}/${newIface.version_major}`,
