@@ -24,6 +24,8 @@ import { AstarteTriggerDeliveryPolicyDTO } from 'astarte-client/types/dto';
 import * as yup from 'yup';
 import { AstarteTriggerDeliveryPolicy } from 'astarte-client/models/Policy';
 import TriggerDeliveryPolicyHandler from './TriggerDeliveryPolicyHandler';
+import { DeliveryPoliciesSchema } from 'schemas/jsonSchemas';
+import JsonEditor from './JsonEditor';
 
 const validateName = (name: string) => {
   const regex = /^(?!@).{1,128}$/;
@@ -250,16 +252,19 @@ export default ({
         <Col md={6}>
           <Form.Group controlId="policySource" className="h-100 d-flex flex-column">
             <Form.Control
-              as="textarea"
+              as="div"
               className="flex-grow-1 font-monospace"
-              value={policySource}
-              onChange={handlePolicySourceChange}
               autoComplete="off"
               required
               readOnly={isReadOnly}
               isValid={isValidPolicySource}
               isInvalid={!isValidPolicySource}
               spellCheck={false}
+            />
+            <JsonEditor
+              resource={DeliveryPoliciesSchema}
+              value={policySource}
+              onChange={handlePolicySourceChange}
             />
             <Form.Control.Feedback type="invalid">{policySourceError}</Form.Control.Feedback>
           </Form.Group>
