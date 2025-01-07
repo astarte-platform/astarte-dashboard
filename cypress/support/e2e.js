@@ -103,3 +103,19 @@ Cypress.Commands.add(
       });
   },
 );
+
+Cypress.Commands.add('checkInterfaceWarning', (interfaceName, interfacesData) => {
+  const interfaceNameString = typeof interfaceName === 'object' ? JSON.stringify(interfaceName) : interfaceName;
+  const isInterfaceInInterfaces = interfacesData.some(i => i.name.trim().toLowerCase() === interfaceNameString.trim().toLowerCase());
+  cy.contains(interfaceNameString)
+    .parent()
+    .find('span.d-inline-flex')
+    .then(($badge) => {
+      if (isInterfaceInInterfaces) {
+        cy.wrap($badge).should('not.contain', '!');
+      } else {
+        cy.wrap($badge).should('exist');
+        cy.wrap($badge).should('contain', '!');
+      }
+    });
+});
