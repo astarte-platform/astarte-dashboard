@@ -17,6 +17,8 @@ describe('Device page tests', () => {
       cy.fixture('device').as('device');
       cy.fixture('device_detailed').as('deviceDetailed');
       cy.fixture('groups').as('groups');
+      cy.fixture('device_with_custom_introspection').as('deviceWithCustomIntrospection');
+      cy.fixture('interfaces').as('interfaces');
       cy.intercept('POST', '/appengine/v1/*/groups/*/devices', {
         statusCode: 201,
         body: '',
@@ -703,7 +705,6 @@ describe('Device page tests', () => {
     it('correctly renders Device Stats', function () {
       cy.intercept('GET', '/appengine/v1/*/devices/*', { fixture: 'device_detailed' });
       cy.visit(`/devices/${this.deviceDetailed.data.id}/edit`);
-
       const formatBytes = (bytes) => {
         if (bytes < 1024) {
           return bytes + 'B';
@@ -904,6 +905,18 @@ describe('Device page tests', () => {
               cy.contains(deviceError.label);
             });
           });
+      });
+    });
+
+    it.only('displays a warning when the device introspection contains an uninstalled interface', function () {
+      cy.intercept('GET', '/appengine/v1/*/devices/*', { fixture: 'device_with_custom_introspection' });
+      cy.intercept('GET', '/realmmanagement/v1/*/interfaces?detailed=true', { fixture: 'interfaces' });
+      cy.visit(`/devices/${this.device.data.id}/edit`);
+      cy.location('pathname').should('eq', `/devices/${this.device.data.id}/edit`);
+      Object.entries(this.device.data.introspection).forEach(([interfaceName]) => {
+        cy.wrap(null).then(() => {
+          cy.checkInterfaceWarning(interfaceName, this.interfaces.data);
+        });
       });
     });
   });
