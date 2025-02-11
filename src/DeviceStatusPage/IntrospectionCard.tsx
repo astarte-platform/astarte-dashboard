@@ -16,24 +16,60 @@
    limitations under the License.
 */
 
-import React from 'react';
-import { Card, Table } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Card, Table, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-
-import type { AstarteDevice, AstarteDeviceInterfaceStats } from 'astarte-client';
+import type {
+  AstarteDevice,
+  AstarteDeviceInterfaceStats,
+  AstarteInterfaceDescriptor,
+} from 'astarte-client';
 import FullHeightCard from '../components/FullHeightCard';
 import { useAstarte } from 'AstarteManager';
 
 interface IntrospectionTableProps {
   deviceId: string;
   introspection: AstarteDeviceInterfaceStats[];
+  interfacesData: AstarteInterfaceDescriptor[];
 }
 
 const IntrospectionTable = ({
   deviceId,
   introspection,
+  interfacesData,
 }: IntrospectionTableProps): React.ReactElement => {
   const astarte = useAstarte();
+
+  const renderInterfaceName = (iface: AstarteInterfaceDescriptor, isInstalled: boolean) => {
+    if (astarte.token?.can('appEngine', 'GET', `/devices/${deviceId}/interfaces/${iface.name}`)) {
+      return !isInstalled ? (
+        <>
+          <OverlayTrigger
+            placement="top"
+            overlay={
+              <Tooltip id={`tooltip-${iface.name}`}>Interface not installed in the realm</Tooltip>
+            }
+          >
+            <span
+              className="d-inline-flex align-items-center justify-content-center rounded-circle border border-danger bg-white text-danger fw-bold me-2"
+              style={{
+                width: '20px',
+                height: '20px',
+              }}
+            >
+              !
+            </span>
+          </OverlayTrigger>
+          {iface.name}
+        </>
+      ) : (
+        <Link to={`/devices/${deviceId}/interfaces/${iface.name}/${iface.major}`}>
+          {iface.name}
+        </Link>
+      );
+    }
+    return iface.name;
+  };
 
   return (
     <Table responsive>
@@ -45,25 +81,21 @@ const IntrospectionTable = ({
         </tr>
       </thead>
       <tbody>
-        {introspection.map((iface) => (
-          <tr key={iface.name}>
-            <td>
-              {astarte.token?.can(
-                'appEngine',
-                'GET',
-                `/devices/${deviceId}/interfaces/${iface.name}`,
-              ) ? (
-                <Link to={`/devices/${deviceId}/interfaces/${iface.name}/${iface.major}`}>
-                  {iface.name}
-                </Link>
-              ) : (
-                iface.name
-              )}
-            </td>
-            <td>{iface.major}</td>
-            <td>{iface.minor}</td>
-          </tr>
-        ))}
+        {introspection.map((iface) => {
+          const isInterfaceInstalled = interfacesData.some(
+            (interfaceData) =>
+              interfaceData.name === iface.name &&
+              interfaceData.major === iface.major &&
+              interfaceData.minor === iface.minor,
+          );
+          return (
+            <tr key={iface.name}>
+              <td>{renderInterfaceName(iface, isInterfaceInstalled)}</td>
+              <td>{iface.major}</td>
+              <td>{iface.minor}</td>
+            </tr>
+          );
+        })}
       </tbody>
     </Table>
   );
@@ -74,14 +106,52 @@ interface IntrospectionCardProps {
 }
 
 const IntrospectionCard = ({ device }: IntrospectionCardProps): React.ReactElement => {
-  const introspection = Array.from(device.introspection.values());
+  const [interfacesData, setInterfacesData] = useState<AstarteInterfaceDescriptor[]>([]);
+  const introspection = Array.from(device.introspection.values()) as AstarteDeviceInterfaceStats[]; // Cast to expected type
+  const astarte = useAstarte();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await astarte.client.getInterfaces();
+        const fullInterfacesData: AstarteInterfaceDescriptor[] = [];
+
+        for (const interfaceName of data) {
+          const interfaceMajors = await astarte.client.getInterfaceMajors(interfaceName);
+
+          for (const major of interfaceMajors) {
+            const interfaceDetails = await astarte.client.getInterface({
+              interfaceName,
+              interfaceMajor: major,
+            });
+
+            fullInterfacesData.push({
+              name: interfaceDetails.name,
+              major: interfaceDetails.major,
+              minor: interfaceDetails.minor,
+            });
+          }
+        }
+        setInterfacesData(fullInterfacesData);
+      } catch (error) {
+        console.error('Failed to fetch interfaces:', error);
+        setInterfacesData([]);
+      }
+    };
+
+    fetchData();
+  }, [astarte]);
 
   return (
     <FullHeightCard xs={12} md={6} className="mb-4">
       <Card.Header as="h5">Interfaces</Card.Header>
       <Card.Body className="d-flex flex-column">
         {introspection.length > 0 ? (
-          <IntrospectionTable deviceId={device.id} introspection={introspection} />
+          <IntrospectionTable
+            deviceId={device.id}
+            introspection={introspection}
+            interfacesData={interfacesData}
+          />
         ) : (
           <p>No introspection info</p>
         )}
