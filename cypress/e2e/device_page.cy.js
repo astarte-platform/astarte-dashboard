@@ -17,6 +17,9 @@ describe('Device page tests', () => {
       cy.fixture('device').as('device');
       cy.fixture('device_detailed').as('deviceDetailed');
       cy.fixture('groups').as('groups');
+      cy.fixture('device_with_custom_introspection').as('deviceWithCustomIntrospection');
+      cy.fixture('interfaces').as('interfaces');
+      cy.fixture('installed_interfaces').as('installedInterfaces')
       cy.intercept('POST', '/appengine/v1/*/groups/*/devices', {
         statusCode: 201,
         body: '',
@@ -904,6 +907,50 @@ describe('Device page tests', () => {
               cy.contains(deviceError.label);
             });
           });
+      });
+    });
+
+    it('displays a warning when the device introspection contains an uninstalled interface', function () {
+      cy.intercept('GET', '/appengine/v1/*/devices/*', { fixture: 'device_with_custom_introspection' }).as('getDevice');
+      cy.intercept('GET', '/realmmanagement/v1/*/interfaces?detailed=true', { fixture: 'installed_interfaces' }).as('installedInterfaces');
+
+      cy.visit(`/devices/${this.deviceWithCustomIntrospection.data.id}/edit`);
+      cy.location('pathname').should('eq', `/devices/${this.deviceWithCustomIntrospection.data.id}/edit`);
+
+      cy.wait('@getDevice').then((interception) => {
+        const deviceData = interception.response.body.data;
+        const introspection = deviceData.introspection;
+
+        cy.wait('@installedInterfaces').then((interception) => {
+          const interfacesData = interception.response.body;
+          Object.entries(introspection).forEach(([interfaceName, { major, minor }]) => {
+            cy.wrap(null).then(() => {
+              const interfaceNameString = typeof interfaceName === 'object' ? JSON.stringify(interfaceName) : interfaceName;
+              const isInterfaceInInterfaces = interfacesData.some(i => {
+                return i.name === interfaceNameString &&
+                       i.major === major &&
+                       i.minor === minor;
+              });
+              cy.contains(interfaceNameString).then(($container) => {
+                if ($container.length > 0) {
+                  const parentElement = cy.wrap($container).parent();
+                  parentElement.find('span.d-inline-flex')
+                    .should('exist')
+                    .then(($badge) => {
+                      if (isInterfaceInInterfaces) {
+                        cy.wrap($badge).invoke('remove');
+                        if (!$container.parent().is('a')) {
+                          $container.wrap(`<a href="/devices/${this.deviceWithCustomIntrospection.data.id}/interfaces/${interfaceNameString}/${major}" target="_blank"></a>`);
+                        }
+                      } else {
+                        cy.wrap($badge).invoke('text').should('include', '!');
+                      }
+                    });
+                }
+              });
+            });
+          });
+        });
       });
     });
   });
