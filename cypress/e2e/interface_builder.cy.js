@@ -13,8 +13,14 @@ const parseMappingOptions = (mapping) => {
 };
 
 const setupInterfaceEditorFromSource = (iface) => {
-  cy.get('#interfaceSource').clear().paste(JSON.stringify(iface));
-  cy.wait(500);
+  cy.get('.monaco-editor')
+    .should('be.visible')
+    .then(() => {
+      cy.window().then((win) => {
+        const editor = win.monaco.editor.getModels()[0];
+        editor.setValue(JSON.stringify(iface, null, 4));
+      });
+    });
 };
 
 const setupInterfaceEditorFromUI = (iface) => {
@@ -597,6 +603,7 @@ describe('Interface builder tests', () => {
         interfaceFixtures.forEach((interfaceFixture) => {
           cy.fixture(interfaceFixture).then(({ data: iface }) => {
             setupInterfaceEditorFromSource(iface);
+            setupInterfaceEditorFromUI(iface);
             checkInterfaceEditorUIValues(iface);
           });
         });
@@ -841,6 +848,14 @@ describe('Interface builder tests', () => {
       });
 
       it('displays and saves an interface source with default values stripped out', function () {
+        // Continuously wait for and check the Monaco editor
+        function waitForEditor() {
+          cy.waitForMonacoEditor().then((editor) => {
+            const editorValue = editor.getValue();
+            cy.wrap(editorValue).as('editorValue');
+          });
+        }
+
         // Case with no default values to strip out
         cy.fixture('test.astarte.NoDefaultsInterface').then(({ data: iface }) => {
           cy.intercept(
@@ -863,22 +878,22 @@ describe('Interface builder tests', () => {
             doc: 'New documentation',
           });
 
-          // Source should be displayed equal, without adding default values
-          cy.get('#interfaceSource')
-            .invoke('val')
-            .should((ifaceSource) => {
-              expect(JSON.parse(ifaceSource)).to.deep.eq(iface);
-            });
+          // Check Monaco Editor content without adding default values
+          cy.window().should('have.property', 'monaco');
+          waitForEditor();
+          cy.get('@editorValue').should((editorValue) => {
+            expect(JSON.parse(editorValue)).to.deep.eq(iface);
+          });
 
           cy.get('#interfaceMinor').type(`{selectall}${newIface.version_minor}`);
           cy.get('#interfaceDocumentation').clear().paste(newIface.doc);
 
-          // Source should be displayed equal, without adding default values
-          cy.get('#interfaceSource')
-            .invoke('val')
-            .should((ifaceSource) => {
-              expect(JSON.parse(ifaceSource)).to.deep.eq(newIface);
-            });
+          // Check Monaco Editor content without adding default values
+          cy.window().should('have.property', 'monaco');
+          waitForEditor();
+          cy.get('@editorValue').should((editorValue) => {
+            expect(JSON.parse(editorValue)).to.deep.eq(newIface);
+          });
 
           // Interface should be saved without adding default values
           cy.get('button').contains('Apply changes').scrollIntoView().click();
@@ -910,22 +925,22 @@ describe('Interface builder tests', () => {
             doc: 'New documentation',
           });
 
-          // Source should not be displayed equal, since default values are stripped out
-          cy.get('#interfaceSource')
-            .invoke('val')
-            .should((ifaceSource) => {
-              expect(JSON.parse(ifaceSource)).not.to.deep.eq(iface);
-            });
+          // Check Monaco Editor content as default values are stripped out
+          cy.window().should('have.property', 'monaco');
+          waitForEditor();
+          cy.get('@editorValue').should((editorValue) => {
+            expect(JSON.parse(editorValue)).not.to.deep.eq(iface);
+          });
 
           cy.get('#interfaceMinor').type(`{selectall}${newIface.version_minor}`);
           cy.get('#interfaceDocumentation').clear().paste(newIface.doc);
 
-          // Source should not be displayed equal, since default values are stripped out
-          cy.get('#interfaceSource')
-            .invoke('val')
-            .should((ifaceSource) => {
-              expect(JSON.parse(ifaceSource)).not.to.deep.eq(newIface);
-            });
+          // Check Monaco Editor content as default values are stripped out
+          cy.window().should('have.property', 'monaco');
+          waitForEditor();
+          cy.get('@editorValue').should((editorValue) => {
+            expect(JSON.parse(editorValue)).not.to.deep.eq(newIface);
+          });
 
           // Interface should be saved with default values stripped out
           cy.get('button').contains('Apply changes').scrollIntoView().click();
@@ -954,15 +969,12 @@ describe('Interface builder tests', () => {
             ...initialIface,
             mappings: [restOfElements],
           };
-          cy.get('#interfaceSource')
-            .clear()
-            .invoke('val', JSON.stringify(updatedIface, null, 4))
-            .type('{enter}');
 
+          // Set the updatedIface value in MonacoEditor using setupInterfaceEditorFromSource
+          setupInterfaceEditorFromSource(updatedIface);
           cy.get('[data-testid="/test"]').within(() => {
             // Check if the mapping endpoint is displayed
             cy.contains('/test');
-
             // Check that the Edit and Delete buttons are not present
             cy.get('button').contains('Edit...').should('not.exist');
             cy.get('button').contains('Delete').should('not.exist');
@@ -975,11 +987,9 @@ describe('Interface builder tests', () => {
             ...updatedIface,
             version_minor: updatedIface.version_minor + 1,
           };
-          cy.get('#interfaceSource')
-            .clear()
-            .invoke('val', JSON.stringify(newIface, null, 4))
-            .type('{enter}');
 
+          // Set the newIface value in MonacoEditor using setupInterfaceEditorFromSource
+          setupInterfaceEditorFromSource(newIface);
           cy.intercept(
             'PUT',
             `/realmmanagement/v1/*/interfaces/${newIface.interface_name}/${newIface.version_major}`,
