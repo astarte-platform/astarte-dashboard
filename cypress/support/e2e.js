@@ -103,3 +103,32 @@ Cypress.Commands.add(
       });
   },
 );
+
+Cypress.Commands.add('pasteJsonIntoEditor', ({ json_object }) => {
+  cy.waitForMonacoEditor().then((editor) => {
+    editor.setValue(JSON.stringify(json_object, null, 2));
+  });
+});
+
+Cypress.Commands.add('waitForMonacoEditor', () => {
+  cy.window().should('have.property', 'monaco').then((monaco) => {
+    return new Cypress.Promise((resolve, reject) => {
+      const checkEditorInitialized = () => {
+        const editorModels = monaco.editor.getModels();
+        if (editorModels.length > 0) {
+          resolve(editorModels[0]);
+        } else {
+          setTimeout(checkEditorInitialized, 1000);
+        }
+      };
+      checkEditorInitialized();
+    });
+  });
+});
+
+Cypress.on('uncaught:exception', (err, runnable) => {
+  if (err.message.includes("Failed to execute 'importScripts' on 'WorkerGlobalScope'") &&
+      err.message.includes("monaco-editor")) {
+    return false;
+  }
+});
