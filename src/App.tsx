@@ -1,7 +1,7 @@
 /*
    This file is part of Astarte.
 
-   Copyright 2020-2021 Ispirata Srl
+   Copyright 2020-2026 SECO Mind Srl
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -110,7 +110,9 @@ const Dashboard = () => {
     <ReduxProvider store={reduxStore}>
       <Container fluid className="px-0">
         <Row className="g-0">
-          <DashboardSidebar />
+          {(import.meta.env.VITE_SHOW_DASHBOARD_SIDEBAR?.toLowerCase() || 'true') === 'true' && (
+            <DashboardSidebar />
+          )}
           <Col className="main-content bg-light vh-100 overflow-auto d-flex flex-column">
             <PageRouter />
           </Col>

@@ -1,5 +1,8 @@
 FROM node:20.3.1 as builder
 
+ARG vite_show_dashboard_sidebar=true
+ENV VITE_SHOW_DASHBOARD_SIDEBAR=${vite_show_dashboard_sidebar}
+
 WORKDIR /app
 ADD . .
 RUN apt-get -qq update
