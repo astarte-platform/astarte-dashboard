@@ -103,16 +103,20 @@ const DashboardSidebar = () => {
   );
 };
 
+const getShowSidebar = () => {
+  const configValue = (window as any).ASTARTE_DASHBOARD_CONFIG?.showSidebar;
+  return configValue !== 'false';
+};
+
 const Dashboard = () => {
   const astarte = useAstarte();
+  const showSidebar = getShowSidebar();
   const reduxStore = useMemo(() => createReduxStore(astarte.client), [astarte.client]);
   return (
     <ReduxProvider store={reduxStore}>
       <Container fluid className="px-0">
         <Row className="g-0">
-          {(import.meta.env.VITE_SHOW_DASHBOARD_SIDEBAR?.toLowerCase() || 'true') === 'true' && (
-            <DashboardSidebar />
-          )}
+          {showSidebar && <DashboardSidebar />}
           <Col className="main-content bg-light vh-100 overflow-auto d-flex flex-column">
             <PageRouter />
           </Col>

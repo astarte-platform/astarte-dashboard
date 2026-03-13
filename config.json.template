@@ -1,0 +1,13 @@
+{
+    "astarte_api_url": "${DASHBOARD_ASTARTE_API_URL}",
+    "default_auth": "${DASHBOARD_DEFAULT_AUTH}",
+    "enable_flow_preview": false,
+    "auth": [
+        {
+            "type": "${DASHBOARD_AUTH_TYPE}"
+        }
+    ],
+    "ui": {
+        "hideSidebar": false
+    }
+}
