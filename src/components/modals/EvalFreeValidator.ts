@@ -20,9 +20,16 @@ import type {
 } from '@rjsf/utils';
 
 function toRJSFValidationErrors(errors: any[]): RJSFValidationError[] {
-  return errors.map((e) => {
-    let property = e.instanceLocation.replace(/^#\/?/, '').replace(/\//g, '.');
-
+  // @cfworker/json-schema emits cascade-summary errors (keyword "properties" /
+  // "items") at parent instance locations in addition to the real leaf errors.
+  // These serve no purpose for RJSF field highlighting and would populate
+  // errorSchema.__errors, so they can be dropped
+  const leafErrors = errors.filter((e) => e.keyword !== 'properties' && e.keyword !== 'items');
+  return leafErrors.map((e) => {
+    // @cfworker/json-schema uses JSON Pointer instance locations (#, #/foo, #/foo/bar).
+    // The leading '#' is stripped here before converting '/' separators to '.' so that
+    // toErrorSchema can correctly map each error to its field key.
+    let property = e.instanceLocation.replace(/^#/, '').replace(/\//g, '.');
     if (property.startsWith('.')) {
       property = property.substring(1);
     }
@@ -98,12 +105,20 @@ class EvalFreeValidator<
     transformErrors?: ErrorTransformer<T, S, F>,
     uiSchema?: UiSchema<T, S, F>,
   ): { errors: RJSFValidationError[]; errorSchema: ErrorSchema<T> } {
-    const dataToValidate =
-      formData === undefined ? getDefaultFormState(this, schema, formData, schema, true) : formData;
+    // jsonschema treats null as a non-object and produces a type error instead
+    // of per-field required errors.  Normalise null → {} for object schemas so
+    // that a pristine form (formData = null) yields the same field-level errors
+    // that @rjsf/validator-ajv8 would produce (i.e. the is-invalid class on
+    // each missing required input).
+    const isObjectSchema = (schema as Record<string, unknown>)?.type === 'object';
+    const normalizedData =
+      (formData === null || formData === undefined) && isObjectSchema
+        ? ({} as unknown as T)
+        : formData;
 
-    const { errors: rawErrors = [], validationError } = this.rawValidation(
+    const { errors: rawErrors = [], validationError } = this.rawValidation<any>(
       schema,
-      dataToValidate as T,
+      normalizedData,
     );
 
     let errors = toRJSFValidationErrors(rawErrors);
@@ -129,7 +144,7 @@ class EvalFreeValidator<
       return { errors, errorSchema };
     }
 
-    const newFormData = getDefaultFormState(this, schema, formData, schema, true) as T;
+    const newFormData = (normalizedData ?? ({} as unknown as T)) as T;
     const errorHandler = customValidate(newFormData, createErrorHandler<T>(newFormData), uiSchema);
     const userErrorSchema = unwrapErrorHandler(errorHandler);
     return validationDataMerge({ errors, errorSchema }, userErrorSchema);
