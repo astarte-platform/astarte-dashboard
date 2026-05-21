@@ -115,7 +115,9 @@ const Dashboard = () => {
     <ReduxProvider store={reduxStore}>
       <Container fluid className="px-0">
         <Row className="g-0">
-          <DashboardSidebar />
+          {(import.meta.env.VITE_SHOW_DASHBOARD_SIDEBAR?.toLowerCase() || 'true') === 'true' && (
+            <DashboardSidebar />
+          )}
           <Col className="main-content bg-light vh-100 overflow-auto d-flex flex-column">
             <PageRouter />
           </Col>
