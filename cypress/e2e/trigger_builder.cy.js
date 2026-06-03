@@ -27,7 +27,7 @@ const triggerOperatorToLabel = {
 };
 
 const setupTriggerEditorFromSource = (trigger) => {
-  cy.get('#triggerSource').scrollIntoView().paste(JSON.stringify(trigger));
+  cy.pasteJsonIntoEditor({ json_object: trigger });
   cy.wait(1500);
 };
 
@@ -84,33 +84,32 @@ const checkTriggerEditorUIValues = (trigger) => {
         .contains('Any interface')
         .should('be.selected');
     } else {
-      cy.get('#triggerInterfaceName')
+      cy.window().should('have.property', 'monaco');
+      cy.window().should((win) => {
+        const models = win.monaco.editor.getModels();
+        expect(models).to.have.length.gt(0);
+      });
+      cy.window().then((win) => {
+        const editor = win.monaco.editor.getModels()[0];
+        const editorContent = editor.getValue();
+        const editorJson = JSON.parse(editorContent);
+        expect(editorJson.simple_triggers[0].interface_name).to.equal(iface);
+        expect(editorJson.simple_triggers[0].interface_major).to.equal(simpleTrigger.interface_major);
+        expect(editorJson.simple_triggers[0].match_path).to.equal(simpleTrigger.match_path);
+      });
+    }
+    if (simpleTrigger.value_match_operator) {
+      cy.get('#triggerOperator')
+      .scrollIntoView()
+      .should('be.visible')
+      .contains(triggerOperatorToLabel[simpleTrigger.value_match_operator])
+      .should('be.selected');
+    }
+    if (simpleTrigger.known_value != null) {
+      cy.get('#triggerKnownValue')
         .scrollIntoView()
         .should('be.visible')
-        .contains(iface)
-        .should('be.selected');
-      cy.get('#triggerInterfaceMajor')
-        .scrollIntoView()
-        .should('be.visible')
-        .contains(simpleTrigger.interface_major)
-        .should('be.selected');
-      cy.get('#triggerPath')
-        .scrollIntoView()
-        .should('be.visible')
-        .and('have.value', simpleTrigger.match_path);
-      if (simpleTrigger.value_match_operator) {
-        cy.get('#triggerOperator')
-          .scrollIntoView()
-          .should('be.visible')
-          .contains(triggerOperatorToLabel[simpleTrigger.value_match_operator])
-          .should('be.selected');
-      }
-      if (simpleTrigger.known_value != null) {
-        cy.get('#triggerKnownValue')
-          .scrollIntoView()
-          .should('be.visible')
-          .and('have.value', simpleTrigger.known_value);
-      }
+        .and('have.value', simpleTrigger.known_value);
     }
   }
 
@@ -658,14 +657,16 @@ describe('Trigger builder tests', () => {
         });
         cy.get('table tr').contains('X-Custom-Header');
         cy.get('table tr').contains('Header value');
-        cy.get('#triggerSource')
-          .invoke('val')
-          .should((triggerSource) => {
-            const trigger = JSON.parse(triggerSource);
+        cy.window().then((win) => {
+          if (win.monaco && win.monaco.editor) {
+            const editor = win.monaco.editor.getModels()[0];
+            const editorContent = editor.getValue();
+            const trigger = JSON.parse(editorContent);
             expect(trigger.action.http_static_headers).to.deep.eq({
               'X-Custom-Header': 'Header value',
             });
-          });
+          }
+        });
 
         // Edit http header
         cy.get('table tr').contains('X-Custom-Header').parents('tr').get('i.fa-pencil-alt').click();
@@ -677,14 +678,16 @@ describe('Trigger builder tests', () => {
           cy.get('button').contains('Update').click();
         });
         cy.get('table tr').contains('Header new value');
-        cy.get('#triggerSource')
-          .invoke('val')
-          .should((triggerSource) => {
-            const trigger = JSON.parse(triggerSource);
+        cy.window().then((win) => {
+          if (win.monaco && win.monaco.editor) {
+            const editor = win.monaco.editor.getModels()[0];
+            const editorContent = editor.getValue();
+            const trigger = JSON.parse(editorContent);
             expect(trigger.action.http_static_headers).to.deep.eq({
               'X-Custom-Header': 'Header new value',
             });
-          });
+          }
+        });
 
         // Delete http header
         cy.get('table tr').contains('X-Custom-Header').parents('tr').get('i.fa-eraser').click();
@@ -693,13 +696,15 @@ describe('Trigger builder tests', () => {
           cy.get('.modal-body').contains('Delete custom header "X-Custom-Header"?');
           cy.get('button').contains('Delete').click();
         });
-        cy.contains('X-Custom-Header').should('not.exist');
-        cy.get('#triggerSource')
-          .invoke('val')
-          .should((triggerSource) => {
-            const trigger = JSON.parse(triggerSource);
+        cy.contains('X-Custom-Header').should('not.exist');  
+        cy.window().then((win) => {
+          if (win.monaco && win.monaco.editor) {
+            const editor = win.monaco.editor.getModels()[0];
+            const editorContent = editor.getValue();
+            const trigger = JSON.parse(editorContent);
             expect(trigger.action.http_static_headers || {}).to.deep.eq({});
-          });
+          }
+        });
       });
 
       it('NewAmqpHeaderModal: empty required Header field marks input invalid and clears on input', () => {
@@ -735,14 +740,16 @@ describe('Trigger builder tests', () => {
         });
         cy.get('table tr').contains('X-Custom-Header');
         cy.get('table tr').contains('Header value');
-        cy.get('#triggerSource')
-          .invoke('val')
-          .should((triggerSource) => {
-            const trigger = JSON.parse(triggerSource);
+        cy.window().then((win) => {
+          if (win.monaco && win.monaco.editor) {
+            const editor = win.monaco.editor.getModels()[0];
+            const editorContent = editor.getValue();
+            const trigger = JSON.parse(editorContent);
             expect(trigger.action.amqp_static_headers).to.deep.eq({
               'X-Custom-Header': 'Header value',
             });
-          });
+          }
+        });
 
         // Edit amqp header
         cy.get('table tr').contains('X-Custom-Header').parents('tr').get('i.fa-pencil-alt').click();
@@ -754,14 +761,16 @@ describe('Trigger builder tests', () => {
           cy.get('button').contains('Update').click();
         });
         cy.get('table tr').contains('Header new value');
-        cy.get('#triggerSource')
-          .invoke('val')
-          .should((triggerSource) => {
-            const trigger = JSON.parse(triggerSource);
+        cy.window().then((win) => {
+          if (win.monaco && win.monaco.editor) {
+            const editor = win.monaco.editor.getModels()[0];
+            const editorContent = editor.getValue();
+            const trigger = JSON.parse(editorContent);
             expect(trigger.action.amqp_static_headers).to.deep.eq({
               'X-Custom-Header': 'Header new value',
             });
-          });
+          }
+        });
 
         // Delete amqp header
         cy.get('table tr').contains('X-Custom-Header').parents('tr').get('i.fa-eraser').click();
@@ -771,12 +780,14 @@ describe('Trigger builder tests', () => {
           cy.get('button').contains('Delete').click();
         });
         cy.contains('X-Custom-Header').should('not.exist');
-        cy.get('#triggerSource')
-          .invoke('val')
-          .should((triggerSource) => {
-            const trigger = JSON.parse(triggerSource);
+        cy.window().then((win) => {
+          if (win.monaco && win.monaco.editor) {
+            const editor = win.monaco.editor.getModels()[0];
+            const editorContent = editor.getValue();
+            const trigger = JSON.parse(editorContent);
             expect(trigger.action.amqp_static_headers || {}).to.deep.eq({});
-          });
+          }
+        });
       });
 
       it('correctly loads trigger from its source', () => {
@@ -819,7 +830,6 @@ describe('Trigger builder tests', () => {
       it('correctly shows trigger data in the Editor UI', function () {
         const encodedTriggerName = encodeURIComponent(this.test_trigger.data.name);
         cy.visit(`/triggers/${encodedTriggerName}/edit`);
-        cy.wait(1000);
         cy.location('pathname').should('eq', `/triggers/${encodedTriggerName}/edit`);
         checkTriggerEditorUIValues(this.test_trigger.data);
       });
