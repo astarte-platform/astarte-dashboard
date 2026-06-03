@@ -1,0 +1,42 @@
+[
+    {
+      "name": "test.astarte.FirstInterface",
+      "major": 1,
+      "minor": 0
+    },
+    {
+      "name": "test.astarte.SecondInterface",
+      "major": 1,
+      "minor": 0
+    },
+    {
+      "name": "test.astarte.ThirdInterface",
+      "major": 1,
+      "minor": 0
+    },
+    {
+      "name": "test.astarte.AggregatedObjectInterface",
+      "major": 1,
+      "minor": 0
+    },
+    {
+      "name": "test.astarte.IndividualObjectInterface",
+      "major": 1,
+      "minor": 0
+    },
+    {
+      "name": "test.astarte.PropertiesInterface",
+      "major": 1,
+      "minor": 0
+    },
+    {
+      "name": "com.example.ExampleInterface",
+      "major": 1,
+      "minor": 0
+    },
+    {
+      "name": "com.test.TestInterface",
+      "major": 1,
+      "minor": 0
+    }
+]
